@@ -1,3 +1,3 @@
 # Notes
-I'm putting some notes in here
+## This file will contain techniques and technologies I learn throughout the coures.
 
