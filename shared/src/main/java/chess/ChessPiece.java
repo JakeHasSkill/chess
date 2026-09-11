@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -51,6 +52,31 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        ArrayList<ChessMove> validMoves = new ArrayList<>();
+        switch (type) {
+            case BISHOP -> {
+                for (int i : new int[]{-1, 1}) {
+                    for (int j : new int[]{-1, 1}) {
+                        int k = 1;
+                        while (true) {
+                            System.out.printf("i: %d | j: %d \n", i, j);
+                            ChessPosition nextPosition = new ChessPosition(myPosition.getRow() + (i * k), myPosition.getColumn() + (j * k));
+                            if (!nextPosition.validPosition())
+                                break;
+                            if (board.getPiece(nextPosition) != null) {
+                                if (board.getPiece(nextPosition).color == color)
+                                    break;
+                            }
+                            validMoves.add(new ChessMove(myPosition, nextPosition, null));
+                            k++;
+                        }
+                    }
+                }
+            }
+            default -> {
+                System.err.println("Not implemented yet");
+            }
+        }
+        return validMoves;
     }
 }

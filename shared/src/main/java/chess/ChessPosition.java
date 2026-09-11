@@ -29,4 +29,11 @@ public class ChessPosition {
     public int getColumn() {
         return col;
     }
+
+    /**
+     * @return whether a position is inside the board
+     */
+    public boolean validPosition() {
+        return 0 <= row && row <= 7 && 0 <= col && col <= 7;
+    }
 }
