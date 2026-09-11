@@ -39,4 +39,16 @@ public class ChessMove {
     public ChessPiece.PieceType getPromotionPiece() {
         return promotion;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object.getClass() != this.getClass()) {
+            return false;
+        }
+        ChessMove that = (ChessMove) object;
+        return this.start == that.start && this.end == that.end && this.promotion == that.promotion;
+    }
 }
