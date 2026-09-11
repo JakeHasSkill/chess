@@ -36,4 +36,16 @@ public class ChessPosition {
     public boolean validPosition() {
         return 0 <= row && row <= 7 && 0 <= col && col <= 7;
     }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object.getClass() != this.getClass()) {
+            return false;
+        }
+        ChessPosition that = (ChessPosition) object;
+        return this.row == that.row && this.col == that.col;
+    }
 }
