@@ -55,4 +55,9 @@ public class ChessPosition {
     public int hashCode() {
         return Objects.hash(row, col) * 31;
     }
+
+    @Override
+    public String toString(){
+        return "{Position:" + row + " to " + col + " Valid:" + validPosition() + "}";
+    }
 }

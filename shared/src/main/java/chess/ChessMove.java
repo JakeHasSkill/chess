@@ -59,4 +59,13 @@ public class ChessMove {
         }
         return start.hashCode() * end.hashCode() * 31;
     }
+
+    @Override
+    public String toString(){
+        String out = "{Move:" + start.toString() + " to " + end.toString();
+        if (promotion != null) {
+            out += " with promotion " + promotion;
+        }
+        return out + "}";
+    }
 }

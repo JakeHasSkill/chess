@@ -86,4 +86,9 @@ public class ChessPiece {
     public int hashCode() {
         return Objects.hash(type, color) * 31;
     }
+
+    @Override
+    public String toString() {
+        return "{Piece:" + type.name() + " Color:" + color.name() + "}";
+    }
 }
