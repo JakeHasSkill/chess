@@ -36,7 +36,7 @@ public class ChessPosition {
      * @return whether a position is inside the board
      */
     public boolean validPosition() {
-        return 0 <= row && row <= 7 && 0 <= col && col <= 7;
+        return 1 <= row && row <= 8 && 1 <= col && col <= 8;
     }
 
     @Override
@@ -58,6 +58,6 @@ public class ChessPosition {
 
     @Override
     public String toString(){
-        return "{Position:" + row + " to " + col + " Valid:" + validPosition() + "}";
+        return "{Pos:" + row + " " + col + " Valid:" + validPosition() + "}";
     }
 }
