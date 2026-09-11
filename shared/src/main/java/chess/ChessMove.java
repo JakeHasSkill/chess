@@ -51,4 +51,12 @@ public class ChessMove {
         ChessMove that = (ChessMove) object;
         return this.start == that.start && this.end == that.end && this.promotion == that.promotion;
     }
+
+    @Override
+    public int hashCode() {
+        if (promotion != null) {
+            return start.hashCode() * end.hashCode() * promotion.hashCode() * 31;
+        }
+        return start.hashCode() * end.hashCode() * 31;
+    }
 }

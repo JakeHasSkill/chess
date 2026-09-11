@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -79,5 +80,10 @@ public class ChessPiece {
             }
         }
         return validMoves;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, color) * 31;
     }
 }
