@@ -7,7 +7,7 @@ package chess;
  * signature of the existing methods.
  */
 public class ChessPosition {
-    final private int row, col;
+    private final int row, col;
 
     public ChessPosition(int row, int col) {
         this.row = row;
