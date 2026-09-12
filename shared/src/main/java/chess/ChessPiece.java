@@ -75,6 +75,25 @@ public class ChessPiece {
                     }
                 }
             }
+            case ROOK -> {
+                for (int[] i : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                    int j = 1;
+                    while (true) {
+                        ChessPosition nextPosition = new ChessPosition(myPosition.getRow() + (i[0] * j), myPosition.getColumn() + (i[1] * j));
+                        if (!nextPosition.validPosition()) {
+                            break;
+                        }
+                        if (board.getPiece(nextPosition) != null) {
+                            if (board.getPiece(nextPosition).color == color)
+                                break;
+                            validMoves.add(new ChessMove(myPosition, nextPosition, null));
+                            break;
+                        }
+                        validMoves.add(new ChessMove(myPosition, nextPosition, null));
+                        j++;
+                    }
+                }
+            }
             default -> {
                 System.err.println("Not implemented yet");
             }
