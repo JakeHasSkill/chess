@@ -83,6 +83,18 @@ public class ChessPiece {
     }
 
     @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+        if (object.getClass() != this.getClass()) {
+            return false;
+        }
+        ChessPiece that = (ChessPiece) object;
+        return this.type == that.type && this.color == that.color;
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(type, color) * 31;
     }
