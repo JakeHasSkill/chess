@@ -49,7 +49,13 @@ public class ChessMove {
             return false;
         }
         ChessMove that = (ChessMove) object;
-        return this.start == that.start && this.end == that.end && this.promotion == that.promotion;
+        if (promotion == null && that.promotion == null) {
+            return this.start.equals(that.start) && this.end.equals(that.end);
+        }
+        else if (promotion == null || that.promotion == null) {
+            return false;
+        }
+        return this.start.equals(that.start) && this.end.equals(that.end) && this.promotion.name().equals(that.promotion.name());
     }
 
     @Override
@@ -64,7 +70,7 @@ public class ChessMove {
     public String toString(){
         String out = "{Move:" + start.toString() + " to " + end.toString();
         if (promotion != null) {
-            out += " with promotion " + promotion;
+            out += " with promotion " + promotion.name();
         }
         return out + "}";
     }

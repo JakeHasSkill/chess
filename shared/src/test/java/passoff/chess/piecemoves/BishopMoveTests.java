@@ -1,10 +1,21 @@
 package passoff.chess.piecemoves;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import passoff.chess.TestUtilities;
 
 public class BishopMoveTests {
+
+    @Test
+    public void testEquals() {
+        Assertions.assertEquals(new ChessPosition(3, 5), new ChessPosition(3, 5));
+        Assertions.assertEquals(new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
+        Assertions.assertEquals(new ChessMove(new ChessPosition(4, 5), new ChessPosition(5, 6), null), new ChessMove(new ChessPosition(4, 5), new ChessPosition(5, 6), null));
+    }
 
     @Test
     public void bishopMoveUntilEdge() {
