@@ -65,11 +65,46 @@ public class ChessPiece {
                     straightLineMovement(board, myPosition, validMoves, i);
                 }
             }
+            case QUEEN -> {
+                for (int[] i : new int[][]{{1, 1}, {-1, 1}, {-1, -1}, {1, -1}, {1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
+                    straightLineMovement(board, myPosition, validMoves, i);
+                }
+            }
+            case KING -> {
+                for (int[] i : new int[][]{{1, 1}, {1, 0}, {1, -1}, {0, 1}, {0, -1}, {-1, 1}, {-1, 0}, {-1, -1}}) {
+                    singlePositionMovement(board, myPosition, i, validMoves);
+                }
+            }
+            case KNIGHT -> {
+                for (int[] i : new int[][]{{1, 2}, {2, 1}, {-1, 2}, {2, -1}, {-1, -2}, {-2, -1}, {1, -2}, {-2, 1}}) {
+                    singlePositionMovement(board, myPosition, i, validMoves);
+                }
+            }
+            case PAWN -> {
+
+            }
             default -> {
                 System.err.println("Not implemented yet");
             }
         }
         return validMoves;
+    }
+
+    /**
+     * Helper function for pieceMoves
+     * For pieces that move to single positions like the King, pawns, and knight
+     */
+    private void singlePositionMovement(ChessBoard board, ChessPosition myPosition, int[] i, ArrayList<ChessMove> validMoves) {
+        ChessPosition nextPosition = new ChessPosition(myPosition.getRow() + i[0], myPosition.getColumn() + i[1]);
+        if (!nextPosition.validPosition())
+            return;
+        if (board.getPiece(nextPosition) != null) {
+            if (board.getPiece(nextPosition).color == color)
+                return;
+            validMoves.add(new ChessMove(myPosition, nextPosition, null));
+            return;
+        }
+        validMoves.add(new ChessMove(myPosition, nextPosition, null));
     }
 
     /**
