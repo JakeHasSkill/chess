@@ -56,42 +56,13 @@ public class ChessPiece {
         ArrayList<ChessMove> validMoves = new ArrayList<>();
         switch (type) {
             case BISHOP -> {
-                for (int i : new int[]{-1, 1}) {
-                    for (int j : new int[]{-1, 1}) {
-                        int k = 1;
-                        while (true) {
-                            ChessPosition nextPosition = new ChessPosition(myPosition.getRow() + (i * k), myPosition.getColumn() + (j * k));
-                            if (!nextPosition.validPosition())
-                                break;
-                            if (board.getPiece(nextPosition) != null) {
-                                if (board.getPiece(nextPosition).color == color)
-                                    break;
-                                validMoves.add(new ChessMove(myPosition, nextPosition, null));
-                                break;
-                            }
-                            validMoves.add(new ChessMove(myPosition, nextPosition, null));
-                            k++;
-                        }
-                    }
+                for (int[] i : new int[][]{{1, 1}, {-1, 1}, {-1, -1}, {1, -1}}) {
+                    straightLineMovement(board, myPosition, validMoves, i);
                 }
             }
             case ROOK -> {
                 for (int[] i : new int[][]{{1, 0}, {-1, 0}, {0, 1}, {0, -1}}) {
-                    int j = 1;
-                    while (true) {
-                        ChessPosition nextPosition = new ChessPosition(myPosition.getRow() + (i[0] * j), myPosition.getColumn() + (i[1] * j));
-                        if (!nextPosition.validPosition()) {
-                            break;
-                        }
-                        if (board.getPiece(nextPosition) != null) {
-                            if (board.getPiece(nextPosition).color == color)
-                                break;
-                            validMoves.add(new ChessMove(myPosition, nextPosition, null));
-                            break;
-                        }
-                        validMoves.add(new ChessMove(myPosition, nextPosition, null));
-                        j++;
-                    }
+                    straightLineMovement(board, myPosition, validMoves, i);
                 }
             }
             default -> {
@@ -99,6 +70,27 @@ public class ChessPiece {
             }
         }
         return validMoves;
+    }
+
+    /**
+     * Helper function for pieceMoves
+     * For pieces that move in a line as far as they can, diagonally or straight
+     */
+    private void straightLineMovement(ChessBoard board, ChessPosition myPosition, ArrayList<ChessMove> validMoves, int[] i) {
+        int j = 1;
+        while (true) {
+            ChessPosition nextPosition = new ChessPosition(myPosition.getRow() + (i[0] * j), myPosition.getColumn() + (i[1] * j));
+            if (!nextPosition.validPosition())
+                break;
+            if (board.getPiece(nextPosition) != null) {
+                if (board.getPiece(nextPosition).color == color)
+                    break;
+                validMoves.add(new ChessMove(myPosition, nextPosition, null));
+                break;
+            }
+            validMoves.add(new ChessMove(myPosition, nextPosition, null));
+            j++;
+        }
     }
 
     @Override
