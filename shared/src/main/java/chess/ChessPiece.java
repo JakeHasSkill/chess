@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -13,10 +14,18 @@ import java.util.Objects;
 public class ChessPiece {
     private final PieceType type;
     private final ChessGame.TeamColor color;
+    private boolean hasMoved;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.color = pieceColor;
         this.type = type;
+        this.hasMoved = false;
+    }
+
+    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type, boolean hasMoved) {
+        this.color = pieceColor;
+        this.type = type;
+        this.hasMoved = hasMoved;
     }
 
     /**
@@ -72,16 +81,22 @@ public class ChessPiece {
             }
             case KING -> {
                 for (int[] i : new int[][]{{1, 1}, {1, 0}, {1, -1}, {0, 1}, {0, -1}, {-1, 1}, {-1, 0}, {-1, -1}}) {
-                    singlePositionMovement(board, myPosition, i, validMoves);
+                    singlePositionMovement(board, myPosition, i, validMoves, true, true);
                 }
             }
             case KNIGHT -> {
                 for (int[] i : new int[][]{{1, 2}, {2, 1}, {-1, 2}, {2, -1}, {-1, -2}, {-2, -1}, {1, -2}, {-2, 1}}) {
-                    singlePositionMovement(board, myPosition, i, validMoves);
+                    singlePositionMovement(board, myPosition, i, validMoves, true, true);
                 }
             }
             case PAWN -> {
-
+                int dir = board.getPawnDirection(color);
+                if (board.pawnStartingPositions(color).contains(myPosition) && board.getPiece(new ChessPosition(myPosition.getRow() + dir, myPosition.getColumn())) == null) {
+                    singlePositionMovement(board, myPosition, new int[]{dir * 2, 0}, validMoves, false, true);
+                }
+                singlePositionMovement(board, myPosition, new int[]{dir, 0}, validMoves, false, true);
+                singlePositionMovement(board, myPosition, new int[]{dir, 1}, validMoves, true, false);
+                singlePositionMovement(board, myPosition, new int[]{dir, -1}, validMoves, true, false);
             }
             default -> {
                 System.err.println("Not implemented yet");
@@ -94,17 +109,27 @@ public class ChessPiece {
      * Helper function for pieceMoves
      * For pieces that move to single positions like the King, pawns, and knight
      */
-    private void singlePositionMovement(ChessBoard board, ChessPosition myPosition, int[] i, ArrayList<ChessMove> validMoves) {
+    private void singlePositionMovement(ChessBoard board, ChessPosition myPosition, int[] i, ArrayList<ChessMove> validMoves, boolean canAttack, boolean canMoveIfEmpty) {
         ChessPosition nextPosition = new ChessPosition(myPosition.getRow() + i[0], myPosition.getColumn() + i[1]);
         if (!nextPosition.validPosition())
             return;
         if (board.getPiece(nextPosition) != null) {
             if (board.getPiece(nextPosition).color == color)
                 return;
-            validMoves.add(new ChessMove(myPosition, nextPosition, null));
-            return;
+            if (!canAttack)
+                return;
         }
-        validMoves.add(new ChessMove(myPosition, nextPosition, null));
+        else if (!canMoveIfEmpty)
+            return;
+        if (PieceType.PAWN.equals(type) && board.pawnPromotionPositions(color).contains(nextPosition)) {
+            validMoves.addAll(List.of(
+                    new ChessMove(myPosition, nextPosition, PieceType.QUEEN),
+                    new ChessMove(myPosition, nextPosition, PieceType.BISHOP),
+                    new ChessMove(myPosition, nextPosition, PieceType.ROOK),
+                    new ChessMove(myPosition, nextPosition, PieceType.KNIGHT)
+            ));
+        }
+        else validMoves.add(new ChessMove(myPosition, nextPosition, null));
     }
 
     /**
