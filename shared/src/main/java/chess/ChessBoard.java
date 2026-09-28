@@ -10,11 +10,15 @@ import java.util.Collection;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessBoard {
+public class ChessBoard{
     private ChessPiece[][] board = new ChessPiece[8][8];
 
     public ChessBoard() {
 
+    }
+
+    public ChessBoard(ChessBoard boardToCopy) {
+        this.board = Arrays.copyOf(boardToCopy.board, boardToCopy.board.length);
     }
 
     /**
