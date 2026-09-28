@@ -32,6 +32,15 @@ public class ChessBoard{
     }
 
     /**
+     * Moves a piece
+     * Will overwrite any piece in the endPosition
+     */
+    public void movePiece(ChessPosition startPosition, ChessPosition endPosition) {
+        board[endPosition.getColumn() - 1][endPosition.getRow() - 1] = board[startPosition.getColumn() - 1][startPosition.getRow() - 1];
+        board[startPosition.getColumn() - 1][startPosition.getRow() - 1] = null;
+    }
+
+    /**
      * Gets a chess piece on the chessboard
      *
      * @param position The position to get the piece from

@@ -68,20 +68,18 @@ public class ChessGame {
      * Helper function for game logic
      */
     public ChessBoard testMove(ChessMove move) {
-
+        if (!board.getPiece(move.getStartPosition()).pieceMoves(board, move.getStartPosition()).contains(move)) {
+            return null;
+        }
+        ChessBoard newBoard = new ChessBoard(board);
+        newBoard.movePiece(move.getStartPosition(), move.getEndPosition());
+        return newBoard;
     }
 
     /**
-     * Determines if the given team is in check
-     *
-     * @param teamColor which team to check for check
-     * @return True if the specified team is in check
+     * Gets all possible moves a player could make, not considering check logic
      */
-    public boolean isInCheck(TeamColor teamColor) {
-        /* TODO: for each move option, check if the King is no longer there after the move happens - if so it's a check
-         * Maybe save which moves cause the check, for further logic like determining which moves stop the check
-         */
-
+    private static ArrayList<ChessMove> getTeamMoves(TeamColor teamColor, ChessBoard board) {
         ArrayList<ChessMove> allMoves = new ArrayList<>();
         for (int col = 1; col <= 8; col++) {
             for (int row = 1; row <= 8; row++) {
@@ -92,6 +90,15 @@ public class ChessGame {
                 allMoves.addAll(piece.pieceMoves(board, position));
             }
         }
+        return allMoves;
+    }
+
+    /**
+     * @param teamColor which team might be in check
+     * @return a list of opposing moves that are causing check
+     */
+    private static ArrayList<ChessMove> getInCheckMoves(TeamColor teamColor, ChessBoard board) {
+        ArrayList<ChessMove> allMoves = getTeamMoves(teamColor, board);
 
         ArrayList<ChessMove> inCheckMoves = new ArrayList<>();
         for (ChessMove move : allMoves) {
@@ -100,7 +107,35 @@ public class ChessGame {
             }
         }
 
-        return !inCheckMoves.isEmpty();
+        return inCheckMoves;
+    }
+
+    /**
+     * Determines if the given team is in check
+     *
+     * @param teamColor which team to check for check
+     * @return True if the specified team is in check
+     */
+    public boolean isInCheck(TeamColor teamColor) {
+        return !getInCheckMoves(teamColor, this.board).isEmpty();
+    }
+    public boolean isInCheck(TeamColor teamColor, ChessBoard board) {
+        return !getInCheckMoves(teamColor, board).isEmpty();
+    }
+
+    /**
+     * @param teamColor which team is trying to get out of check
+     * @return list of moves that gets the team out of check
+     */
+    private ArrayList<ChessMove> getCheckAvoidingMoves(TeamColor teamColor) {
+        ArrayList<ChessMove> possibleMoves = getTeamMoves(teamColor, this.board);
+        ArrayList<ChessMove> avoidingMoves = new ArrayList<>();
+        for (ChessMove move : possibleMoves) {
+            ChessBoard newBoard = testMove(move);
+            if (isInCheck(teamColor, newBoard)) break;
+            avoidingMoves.add(move);
+        }
+        return avoidingMoves;
     }
 
     /**
@@ -110,9 +145,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        /* TODO: for each possible move I can do, test the move for isInCheck after. If no results, checkmate.
-         *
-         */
+        return !getCheckAvoidingMoves(teamColor).isEmpty();
     }
 
     /**
