@@ -85,8 +85,8 @@ public class ChessGame {
             for (int row = 1; row <= 8; row++) {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(position);
-                if (piece == null) break;
-                if (piece.getTeamColor() == teamColor) break;
+                if (piece == null) continue;
+                if (piece.getTeamColor() == teamColor) continue;
                 allMoves.addAll(piece.pieceMoves(board, position));
             }
         }
@@ -132,7 +132,7 @@ public class ChessGame {
         ArrayList<ChessMove> avoidingMoves = new ArrayList<>();
         for (ChessMove move : possibleMoves) {
             ChessBoard newBoard = testMove(move);
-            if (isInCheck(teamColor, newBoard)) break;
+            if (isInCheck(teamColor, newBoard)) continue;
             avoidingMoves.add(move);
         }
         return avoidingMoves;
@@ -149,6 +149,19 @@ public class ChessGame {
     }
 
     /**
+     * Returns a list of moves that doesn't get the team in check
+     */
+    private ArrayList<ChessMove> getMovesMinusStalemate(TeamColor teamColor, ChessBoard board) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        for (ChessMove move : getTeamMoves(teamColor, board)) {
+            ChessBoard nextMoveBoard = testMove(move);
+            if (isInCheck(teamColor, nextMoveBoard)) continue;
+            moves.add(move);
+        }
+        return moves;
+    }
+
+    /**
      * Determines if the given team is in stalemate, which here is defined as having
      * no valid moves while not in check.
      *
@@ -156,7 +169,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return !getMovesMinusStalemate(teamColor, this.board).isEmpty();
     }
 
     /**
