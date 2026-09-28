@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -80,6 +81,26 @@ public class ChessGame {
         /* TODO: for each move option, check if the King is no longer there after the move happens - if so it's a check
          * Maybe save which moves cause the check, for further logic like determining which moves stop the check
          */
+
+        ArrayList<ChessMove> allMoves = new ArrayList<>();
+        for (int col = 1; col <= 8; col++) {
+            for (int row = 1; row <= 8; row++) {
+                ChessPosition position = new ChessPosition(row, col);
+                ChessPiece piece = board.getPiece(position);
+                if (piece == null) break;
+                if (piece.getTeamColor() == teamColor) break;
+                allMoves.addAll(piece.pieceMoves(board, position));
+            }
+        }
+
+        ArrayList<ChessMove> inCheckMoves = new ArrayList<>();
+        for (ChessMove move : allMoves) {
+            if (board.getPiece(move.getEndPosition()).getPieceType().equals(ChessPiece.PieceType.KING)) {
+                inCheckMoves.add(move);
+            }
+        }
+
+        return !inCheckMoves.isEmpty();
     }
 
     /**
