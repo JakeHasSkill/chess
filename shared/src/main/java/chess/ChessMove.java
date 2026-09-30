@@ -65,10 +65,6 @@ public class ChessMove {
 
     @Override
     public int hashCode() {
-//        if (promotion != null) {
-//            return start.hashCode() * end.hashCode() * promotion.hashCode() * 31;
-//        }
-//        return start.hashCode() * end.hashCode() * 31;
         return Objects.hash(start, end, promotion);
     }
 
