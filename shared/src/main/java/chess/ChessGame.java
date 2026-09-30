@@ -99,6 +99,11 @@ public class ChessGame {
             throw new InvalidMoveException("Not a valid move: " + move);
         }
         board.movePiece(move.getStartPosition(), move.getEndPosition());
+        if (move.getPromotionPiece() != null) {
+            ChessPiece pawnToPromote = board.getPiece(move.getEndPosition());
+            board.addPiece(move.getEndPosition(), new ChessPiece(pawnToPromote.getTeamColor(), move.getPromotionPiece(), true));
+        }
+        board.getPiece(move.getEndPosition()).setHasMoved(true);
         whoseTurn = otherTeam(whoseTurn);
     }
 

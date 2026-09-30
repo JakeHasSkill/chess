@@ -44,6 +44,14 @@ public class ChessPiece {
         PAWN
     }
 
+    public boolean hasMoved() {
+        return hasMoved;
+    }
+
+    public void setHasMoved(boolean hasMoved) {
+        this.hasMoved = hasMoved;
+    }
+
     /**
      * @return Which team this chess piece belongs to
      */
