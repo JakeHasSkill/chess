@@ -28,6 +28,10 @@ public class ChessPiece {
         this.hasMoved = hasMoved;
     }
 
+    public ChessPiece(ChessPiece pieceToCopy) {
+        this(pieceToCopy.color, pieceToCopy.type, pieceToCopy.hasMoved);
+    }
+
     /**
      * The various different chess piece options
      */
@@ -155,15 +159,9 @@ public class ChessPiece {
 
     @Override
     public boolean equals(Object object) {
-        if (object == null) {
-            return false;
-        }
-        if (this == object) {
-            return true;
-        }
-        if (object.getClass() != this.getClass()) {
-            return false;
-        }
+        if (object == null) return false;
+        if (this == object) return true;
+        if (object.getClass() != this.getClass()) return false;
         ChessPiece that = (ChessPiece) object;
         return this.type == that.type && this.color == that.color;
     }
