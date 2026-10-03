@@ -44,6 +44,10 @@ public class ChessGame {
         BLACK
     }
 
+    public ChessMove getLastMove() {
+        return lastMove;
+    }
+
     public static TeamColor otherTeam(TeamColor teamColor) {
         if (teamColor == TeamColor.WHITE) return TeamColor.BLACK;
         else return TeamColor.WHITE;
@@ -63,7 +67,7 @@ public class ChessGame {
         }
         TeamColor color = piece.getTeamColor();
         ArrayList<ChessMove> moves = new ArrayList<>();
-        for (ChessMove move : piece.pieceMoves(board, startPosition)) {
+        for (ChessMove move : piece.pieceMoves(board, startPosition, lastMove)) {
             if (!getMovesMinusStalemate(color, board).contains(move)) {
                 continue;
             }
@@ -72,7 +76,7 @@ public class ChessGame {
                     continue;
                 }
             }
-            ChessBoard nextMoveBoard = testMove(move, board);
+            ChessBoard nextMoveBoard = testMove(move, board, lastMove);
             if (isInCheck(color, nextMoveBoard)) {
                 continue;
             }
@@ -105,6 +109,7 @@ public class ChessGame {
         }
         board.getPiece(move.getEndPosition()).setHasMoved(true);
         whoseTurn = otherTeam(whoseTurn);
+        lastMove = move;
     }
 
     /**
@@ -112,7 +117,7 @@ public class ChessGame {
      * Helper function for game logic
      * Does not check to see if a move is valid
      */
-    public static ChessBoard testMove(ChessMove move, ChessBoard board) {
+    public static ChessBoard testMove(ChessMove move, ChessBoard board, lastMove) {
         if (board.getPiece(move.getStartPosition()) == null) throw new RuntimeException("testMove got a move for a piece that is null");
         ChessBoard newBoard = new ChessBoard(board);
         newBoard.movePiece(move.getStartPosition(), move.getEndPosition());
@@ -122,7 +127,7 @@ public class ChessGame {
     /**
      * Gets all possible moves a player could make, not considering check logic
      */
-    private static ArrayList<ChessMove> getTeamMoves(TeamColor teamColor, ChessBoard board) {
+    private ArrayList<ChessMove> getTeamMoves(TeamColor teamColor, ChessBoard board) {
         if (board == null) return new ArrayList<>();
         ArrayList<ChessMove> allMoves = new ArrayList<>();
         for (int col = 1; col <= 8; col++) {
@@ -131,7 +136,7 @@ public class ChessGame {
                 ChessPiece piece = board.getPiece(position);
                 if (piece == null) continue;
                 if (piece.getTeamColor() != teamColor) continue;
-                allMoves.addAll(piece.pieceMoves(board, position));
+                allMoves.addAll(piece.pieceMoves(board, position, this.lastMove));
             }
         }
         return allMoves;
@@ -141,7 +146,7 @@ public class ChessGame {
      * @param teamColor which team might be in check
      * @return a list of opposing moves that are causing check
      */
-    private static ArrayList<ChessMove> getInCheckMoves(TeamColor teamColor, ChessBoard board) {
+    private ArrayList<ChessMove> getInCheckMoves(TeamColor teamColor, ChessBoard board) {
         ArrayList<ChessMove> allMoves = getTeamMoves(otherTeam(teamColor), board);
 
         ArrayList<ChessMove> inCheckMoves = new ArrayList<>();

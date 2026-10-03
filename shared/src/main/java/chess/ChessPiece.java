@@ -73,7 +73,10 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
-    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition){
+        return pieceMoves(board, myPosition, null);
+    }
+    public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition, ChessMove lastMove) {
         ArrayList<ChessMove> validMoves = new ArrayList<>();
         switch (type) {
             case BISHOP -> {
@@ -103,8 +106,19 @@ public class ChessPiece {
             }
             case PAWN -> {
                 int dir = board.getPawnDirection(color);
-                if (board.pawnStartingPositions(color).contains(myPosition) && board.getPiece(new ChessPosition(myPosition.getRow() + dir, myPosition.getColumn())) == null) {
+                if (board.pawnStartingPositions(color).contains(myPosition)
+                        && board.getPiece(new ChessPosition(myPosition.getRow() + dir, myPosition.getColumn())) == null) {
                     singlePositionMovement(board, myPosition, new int[]{dir * 2, 0}, validMoves, false, true);
+                }
+                if (lastMove != null && board.pawnEnpassantPositions(color).contains(myPosition)) {
+                    for (int i : new int[]{1, -1}) {
+                        if (lastMove.getEndPosition().equals(new ChessPosition(myPosition.getRow(), myPosition.getColumn() + i))) {
+                            ChessPiece enemyPiece = board.getPiece(new ChessPosition(myPosition.getRow(), myPosition.getColumn() + i));
+                            if (enemyPiece.type.equals(PieceType.PAWN) && !enemyPiece.color.equals(color)) {
+                                enpassantMovement(board, myPosition, dir, validMoves);
+                            }
+                        }
+                    }
                 }
                 singlePositionMovement(board, myPosition, new int[]{dir, 0}, validMoves, false, true);
                 singlePositionMovement(board, myPosition, new int[]{dir, 1}, validMoves, true, false);
@@ -115,6 +129,19 @@ public class ChessPiece {
             }
         }
         return validMoves;
+    }
+
+    private void enpassantMovement(ChessBoard board, ChessPosition myPosition, int dir, ArrayList<ChessMove> validMoves) {
+        for (int i : new int[]{1, -1}) {
+            ChessPosition possiblePosition = new ChessPosition(myPosition.getRow(), myPosition.getColumn() + i);
+            if (!possiblePosition.validPosition()) {return;}
+            ChessPiece possibleOpposingPawn = board.getPiece(possiblePosition);
+            if (possibleOpposingPawn != null) {
+                if (possibleOpposingPawn.type.equals(PieceType.PAWN)) {
+                    validMoves.add(new ChessMove(myPosition, new ChessPosition(myPosition.getRow() + dir, myPosition.getColumn() + i), null));
+                }
+            }
+        }
     }
 
     /**

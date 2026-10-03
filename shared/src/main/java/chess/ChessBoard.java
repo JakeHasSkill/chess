@@ -86,14 +86,7 @@ public class ChessBoard{
         board[4][7] = new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING);
     }
 
-    public Collection<ChessPosition> pawnStartingPositions(ChessGame.TeamColor color) {
-        int row;
-        if (color.equals(ChessGame.TeamColor.BLACK)) {
-            row = 7;
-        }
-        else {
-            row = 2;
-        }
+    private Collection<ChessPosition> pawnPositions(int row) {
         ArrayList<ChessPosition> startPositions = new ArrayList<>();
         for (int i = 1; i <= 8; i++) {
             startPositions.add(new ChessPosition(row, i));
@@ -101,19 +94,32 @@ public class ChessBoard{
         return startPositions;
     }
 
-    public Collection<ChessPosition> pawnPromotionPositions(ChessGame.TeamColor color) {
-        int row;
+    public Collection<ChessPosition> pawnStartingPositions(ChessGame.TeamColor color) {
         if (color.equals(ChessGame.TeamColor.BLACK)) {
-            row = 1;
+            return pawnPositions(7);
         }
         else {
-            row = 8;
+            return pawnPositions(2);
         }
-        ArrayList<ChessPosition> promotionPositions = new ArrayList<>();
-        for (int i = 1; i <= 8; i++) {
-            promotionPositions.add(new ChessPosition(row, i));
+
+    }
+
+    public Collection<ChessPosition> pawnPromotionPositions(ChessGame.TeamColor color) {
+        if (color.equals(ChessGame.TeamColor.BLACK)) {
+            return pawnPositions(1);
         }
-        return promotionPositions;
+        else {
+            return pawnPositions(8);
+        }
+    }
+
+    public Collection<ChessPosition> pawnEnpassantPositions(ChessGame.TeamColor color) {
+        if (color.equals(ChessGame.TeamColor.BLACK)) {
+            return pawnPositions(4);
+        }
+        else {
+            return pawnPositions(5);
+        }
     }
 
     public int getPawnDirection(ChessGame.TeamColor color) {
