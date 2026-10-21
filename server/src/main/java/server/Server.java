@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.UserData;
+import service.AlreadyTakenException;
 import service.GameLogicService;
 
 public class Server {
@@ -16,7 +17,8 @@ public class Server {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
         // Register your endpoints and exception handlers here.
-        javalin.post("/register", this::register);
+        javalin.post("/user", this::register);
+        javalin.delete("/db", this::clearEntireDatabase);
     }
 
     public int run(int desiredPort) {
@@ -31,11 +33,16 @@ public class Server {
     private void register(Context context) {
         Gson gson = new Gson();
         UserData userData = gson.fromJson(context.body(), UserData.class);
-        if (service.getUser(userData.username()) == null) {
+        try {
+            service.registerUser(userData);
+            context.status(200); // This should really return 201, but the passoff tests require 200
+        } catch (AlreadyTakenException e) {
             context.status(400);
             context.result("{\"message\": \"Error: Username already taken\"}");
         }
-        service.registerUser(userData);
-        context.status(201);
+    }
+
+    private void clearEntireDatabase(Context context) {
+        service.clearEntireDatabase();
     }
 }

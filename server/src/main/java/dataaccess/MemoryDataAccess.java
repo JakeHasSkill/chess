@@ -6,24 +6,27 @@ import model.UserData;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.TreeMap;
 
 public class MemoryDataAccess implements DataAccess{
-    private ArrayList<AuthData> authData;
-    private ArrayList<GameData> gameData;
-    private ArrayList<UserData> userData;
+    private Map<Integer, AuthData> authData;
+    private Map<String, GameData> gameData;
+    private Map<String, UserData> userData;
 
     public MemoryDataAccess() {
-
+        authData = new TreeMap<>();
+        gameData = new TreeMap<>();
+        userData = new TreeMap<>();
     }
 
     @Override
     public UserData getUserData(String username) {
-        return null;
+        return userData.get(username);
     }
 
     @Override
     public void addUser(UserData userData) {
-
+        this.userData.put(userData.username(), userData);
     }
 
     @Override
@@ -48,6 +51,8 @@ public class MemoryDataAccess implements DataAccess{
 
     @Override
     public void clearEntireDatabase() {
-
+        authData = new TreeMap<>();
+        gameData = new TreeMap<>();
+        userData = new TreeMap<>();
     }
 }
