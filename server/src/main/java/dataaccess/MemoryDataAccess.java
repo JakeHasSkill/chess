@@ -2,6 +2,7 @@ package dataaccess;
 
 import model.AuthData;
 import model.GameData;
+import model.LoginData;
 import model.UserData;
 
 import java.util.ArrayList;
@@ -9,12 +10,12 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class MemoryDataAccess implements DataAccess{
-    private Map<Integer, AuthData> authData;
+    private ArrayList<AuthData> authData;
     private Map<String, GameData> gameData;
     private Map<String, UserData> userData;
 
     public MemoryDataAccess() {
-        authData = new TreeMap<>();
+        authData = new ArrayList<>();
         gameData = new TreeMap<>();
         userData = new TreeMap<>();
     }
@@ -30,13 +31,19 @@ public class MemoryDataAccess implements DataAccess{
     }
 
     @Override
-    public AuthData getAuthData(UserData userData) {
-        return null;
+    public ArrayList<AuthData> getAuthData(LoginData loginData) {
+        ArrayList<AuthData> output = new ArrayList<>();
+        for (AuthData data : this.authData) {
+            if (data.username().equals(loginData.username())) {
+                output.add(data);
+            }
+        }
+        return output;
     }
 
     @Override
     public void addAuthData(AuthData authData) {
-
+        this.authData.add(authData);
     }
 
     @Override
@@ -51,7 +58,7 @@ public class MemoryDataAccess implements DataAccess{
 
     @Override
     public void clearEntireDatabase() {
-        authData = new TreeMap<>();
+        authData = new ArrayList<>();
         gameData = new TreeMap<>();
         userData = new TreeMap<>();
     }

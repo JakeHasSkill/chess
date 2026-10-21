@@ -3,9 +3,8 @@ package server;
 import com.google.gson.Gson;
 import io.javalin.*;
 import io.javalin.http.Context;
-import model.UserData;
-import service.AlreadyTakenException;
-import service.GameLogicService;
+import model.*;
+import service.*;
 
 public class Server {
 
@@ -19,6 +18,7 @@ public class Server {
         // Register your endpoints and exception handlers here.
         javalin.post("/user", this::register);
         javalin.delete("/db", this::clearEntireDatabase);
+        javalin.post("/session", this::login);
     }
 
     public int run(int desiredPort) {
@@ -34,11 +34,31 @@ public class Server {
         Gson gson = new Gson();
         UserData userData = gson.fromJson(context.body(), UserData.class);
         try {
-            service.registerUser(userData);
-            context.status(200); // This should really return 201, but the passoff tests require 200
+            AuthData authData = service.registerUser(userData);
+            context.status(200); // This would be better as 201 created
+            context.result("{\"username\":\"" + authData.username() + "\",\"authToken\": \"" + authData.authToken() + "\"}");
         } catch (AlreadyTakenException e) {
+            context.status(403); // This would be better as 409 conflict
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        } catch (InvalidRequestException e) {
             context.status(400);
-            context.result("{\"message\": \"Error: Username already taken\"}");
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        }
+    }
+
+    private void login(Context context) {
+        Gson gson = new Gson();
+        LoginData loginData = gson.fromJson(context.body(), LoginData.class);
+        try {
+            AuthData authData = service.login(loginData);
+            context.status(200);
+            context.result("{\"username\":\"" + authData.username() + "\",\"authToken\": \"" + authData.authToken() + "\"}");
+        } catch (InvalidLoginException e) {
+            context.status(401);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        } catch (InvalidRequestException e) {
+            context.status(400);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         }
     }
 
