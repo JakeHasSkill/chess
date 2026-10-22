@@ -6,6 +6,7 @@ import model.AuthData;
 import model.LoginData;
 import model.UserData;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 public class GameLogicService {
@@ -54,6 +55,20 @@ public class GameLogicService {
             throw new InvalidLoginException("Incorrect username or password");
         }
         return generateAuthData(userData);
+    }
+
+    public void logout(String authToken) {
+        if (authToken == null) {
+            throw new InvalidAuthToken("AuthToken cannot be null");
+        }
+        ArrayList<AuthData> authData = database.getAuthData();
+        for (AuthData data : authData) {
+            if (data.authToken().equals(authToken)) {
+                database.deleteAuthData(data);
+                return;
+            }
+        }
+        throw new InvalidAuthToken("Invalid AuthToken");
     }
 
     public void clearEntireDatabase() {

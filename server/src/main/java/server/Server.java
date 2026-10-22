@@ -19,6 +19,7 @@ public class Server {
         javalin.post("/user", this::register);
         javalin.delete("/db", this::clearEntireDatabase);
         javalin.post("/session", this::login);
+        javalin.delete("/session", this::logout);
     }
 
     public int run(int desiredPort) {
@@ -58,6 +59,17 @@ public class Server {
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         } catch (InvalidRequestException e) {
             context.status(400);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        }
+    }
+
+    private void logout(Context context) {
+        String authToken = context.header("authorization");
+        try {
+            service.logout(authToken);
+            context.status(200);
+        } catch (InvalidAuthToken e) {
+            context.status(401);
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         }
     }

@@ -11,6 +11,8 @@ public interface DataAccess {
     UserData getUserData(String username);
     void addUser(UserData userData);
     ArrayList<AuthData> getAuthData(LoginData loginData);
+    ArrayList<AuthData> getAuthData();
+    void deleteAuthData(AuthData authData);
     void addAuthData(AuthData authData);
     GameData getGameData(String gameName);
     ArrayList<GameData> getAllGameData();

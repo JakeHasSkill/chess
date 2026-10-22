@@ -6,6 +6,7 @@ import model.LoginData;
 import model.UserData;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -39,6 +40,16 @@ public class MemoryDataAccess implements DataAccess{
             }
         }
         return output;
+    }
+
+    @Override
+    public ArrayList<AuthData> getAuthData() {
+        return new ArrayList<>(authData);
+    }
+
+    @Override
+    public void deleteAuthData(AuthData authData) {
+        this.authData.remove(authData);
     }
 
     @Override
