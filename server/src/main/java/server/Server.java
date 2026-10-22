@@ -6,6 +6,8 @@ import io.javalin.http.Context;
 import model.*;
 import service.*;
 
+import java.util.ArrayList;
+
 public class Server {
 
     private final Javalin javalin;
@@ -20,6 +22,8 @@ public class Server {
         javalin.delete("/db", this::clearEntireDatabase);
         javalin.post("/session", this::login);
         javalin.delete("/session", this::logout);
+        javalin.get("/game", this::listGames);
+        javalin.post("/game", this::createGame);
     }
 
     public int run(int desiredPort) {
@@ -70,6 +74,36 @@ public class Server {
             context.status(200);
         } catch (InvalidAuthToken e) {
             context.status(401);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        }
+    }
+
+    private void listGames(Context context) {
+        Gson gson = new Gson();
+        String authToken = context.header("authorization");
+        try {
+            ArrayList<GameData> gameDataList = service.listGames(authToken);
+            context.status(200);
+            String gameDataString = gson.toJson(gameDataList);
+            context.result(gameDataString);
+        } catch (InvalidAuthToken e) {
+            context.status(401);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        }
+    }
+
+    private void createGame(Context context) {
+        Gson gson = new Gson();
+        GameData gameData = gson.fromJson(context.body(), GameData.class);
+        String authToken = context.header("authorization");
+        try {
+            context.result("{\"gameID\":\"" + service.createGame(gameData, authToken) + "\"}");
+            context.status(200);
+        } catch (InvalidAuthToken e) {
+            context.status(401);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        } catch (InvalidRequestException e) {
+            context.status(400);
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         }
     }

@@ -3,6 +3,7 @@ package service;
 import dataaccess.DataAccess;
 import dataaccess.MemoryDataAccess;
 import model.AuthData;
+import model.GameData;
 import model.LoginData;
 import model.UserData;
 
@@ -69,6 +70,35 @@ public class GameLogicService {
             }
         }
         throw new InvalidAuthToken("Invalid AuthToken");
+    }
+
+    private AuthData validateAuthToken(String authToken) {
+        if (authToken == null) {
+            throw new InvalidAuthToken("AuthToken cannot be null");
+        }
+        ArrayList<AuthData> authData = database.getAuthData();
+        for (AuthData data : authData) {
+            if (data.authToken().equals(authToken)) {
+                return data;
+            }
+        }
+        throw new InvalidAuthToken("Invalid AuthToken");
+    }
+
+    public ArrayList<GameData> listGames(String authToken) {
+        validateAuthToken(authToken);
+        return database.getAllGameData();
+    }
+
+    public int createGame(GameData gameData, String authToken) {
+        validateAuthToken(authToken);
+        if (gameData == null) {
+            throw new InvalidRequestException("GameData cannot be null");
+        }
+        if (gameData.gameName() == null) {
+            throw new InvalidRequestException("Game Name cannot be null");
+        }
+        return database.addGameData(gameData);
     }
 
     public void clearEntireDatabase() {

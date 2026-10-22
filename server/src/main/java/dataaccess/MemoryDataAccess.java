@@ -6,19 +6,20 @@ import model.LoginData;
 import model.UserData;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class MemoryDataAccess implements DataAccess{
     private ArrayList<AuthData> authData;
-    private Map<String, GameData> gameData;
+    private ArrayList<GameData> gameData;
+    private int nextGameID;
     private Map<String, UserData> userData;
 
     public MemoryDataAccess() {
         authData = new ArrayList<>();
-        gameData = new TreeMap<>();
+        gameData = new ArrayList<>();
         userData = new TreeMap<>();
+        nextGameID = 1;
     }
 
     @Override
@@ -58,19 +59,31 @@ public class MemoryDataAccess implements DataAccess{
     }
 
     @Override
-    public GameData getGameData(String gameName) {
-        return null;
+    public GameData getGameData(String gameName) throws DataAccessException {
+        for (GameData game : gameData) {
+            if (game.gameName().equals(gameName)) {
+                return game;
+            }
+        }
+        throw new DataAccessException("Game doesn't exist with that name");
+    }
+
+    @Override
+    public int addGameData(GameData gameData) {
+        this.gameData.add(new GameData(nextGameID, gameData));
+        nextGameID++;
+        return nextGameID - 1;
     }
 
     @Override
     public ArrayList<GameData> getAllGameData() {
-        return null;
+        return new ArrayList<>(gameData);
     }
 
     @Override
     public void clearEntireDatabase() {
         authData = new ArrayList<>();
-        gameData = new TreeMap<>();
+        gameData = new ArrayList<>();
         userData = new TreeMap<>();
     }
 }
