@@ -2,7 +2,6 @@ package dataaccess;
 
 import model.AuthData;
 import model.GameData;
-import model.LoginData;
 import model.UserData;
 
 import java.util.ArrayList;
@@ -30,17 +29,6 @@ public class MemoryDataAccess implements DataAccess{
     @Override
     public void addUser(UserData userData) {
         this.userData.put(userData.username(), userData);
-    }
-
-    @Override
-    public ArrayList<AuthData> getAuthData(LoginData loginData) {
-        ArrayList<AuthData> output = new ArrayList<>();
-        for (AuthData data : this.authData) {
-            if (data.username().equals(loginData.username())) {
-                output.add(data);
-            }
-        }
-        return output;
     }
 
     @Override
