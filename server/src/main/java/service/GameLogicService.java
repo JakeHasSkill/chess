@@ -1,11 +1,10 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import dataaccess.MemoryDataAccess;
-import model.AuthData;
-import model.GameData;
-import model.LoginData;
-import model.UserData;
+import model.*;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -99,6 +98,33 @@ public class GameLogicService {
             throw new InvalidRequestException("Game Name cannot be null");
         }
         return database.addGameData(gameData);
+    }
+
+    public void joinGame(JoinData joinData, String authToken) {
+        AuthData authData = validateAuthToken(authToken);
+        if (joinData == null) {
+            throw new InvalidRequestException("JoinData cannot be null");
+        }
+        if (joinData.playerColor() == null) {
+            throw new InvalidRequestException("Player color cannot be null");
+        }
+        try {
+            GameData game = database.getGameData(joinData.gameID());
+            if (joinData.playerColor().equals(ChessGame.TeamColor.BLACK)) {
+                if (game.blackUsername() != null) {
+                    throw new AlreadyTakenException("Black player is already assigned");
+                }
+                game = new GameData(game.gameID(), game.whiteUsername(), authData.username(), game.gameName(), game.game());
+            } else {
+                if (game.whiteUsername() != null) {
+                    throw new AlreadyTakenException("White player is already assigned");
+                }
+                game = new GameData(game.gameID(), authData.username(), game.blackUsername(), game.gameName(), game.game());
+            }
+            database.editGameData(game);
+        } catch (DataAccessException e) {
+            throw new InvalidRequestException(e.getMessage());
+        }
     }
 
     public void clearEntireDatabase() {

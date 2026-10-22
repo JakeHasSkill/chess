@@ -24,6 +24,7 @@ public class Server {
         javalin.delete("/session", this::logout);
         javalin.get("/game", this::listGames);
         javalin.post("/game", this::createGame);
+        javalin.put("/game", this::joinGame);
     }
 
     public int run(int desiredPort) {
@@ -85,7 +86,7 @@ public class Server {
             ArrayList<GameData> gameDataList = service.listGames(authToken);
             context.status(200);
             String gameDataString = gson.toJson(gameDataList);
-            context.result(gameDataString);
+            context.result("{\"games\":" + gameDataString + "}");
         } catch (InvalidAuthToken e) {
             context.status(401);
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
@@ -104,6 +105,25 @@ public class Server {
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         } catch (InvalidRequestException e) {
             context.status(400);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        }
+    }
+
+    private void joinGame(Context context) {
+        Gson gson = new Gson();
+        JoinData joinData = gson.fromJson(context.body(), JoinData.class);
+        String authToken = context.header("authorization");
+        try {
+            service.joinGame(joinData, authToken);
+            context.status(200);
+        } catch (InvalidRequestException e) {
+            context.status(400);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        } catch (InvalidAuthToken e) {
+            context.status(401);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        } catch (AlreadyTakenException e) {
+            context.status(403);
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         }
     }

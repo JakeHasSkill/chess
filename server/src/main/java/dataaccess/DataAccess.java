@@ -14,8 +14,9 @@ public interface DataAccess {
     ArrayList<AuthData> getAuthData();
     void deleteAuthData(AuthData authData);
     void addAuthData(AuthData authData);
-    GameData getGameData(String gameName) throws DataAccessException;
+    GameData getGameData(int gameID) throws DataAccessException;
     int addGameData(GameData gameData);
+    void editGameData(GameData gameData);
     ArrayList<GameData> getAllGameData();
     void clearEntireDatabase(); // Yes this is sketchy
 }

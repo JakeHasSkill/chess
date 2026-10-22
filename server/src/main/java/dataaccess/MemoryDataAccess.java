@@ -59,13 +59,13 @@ public class MemoryDataAccess implements DataAccess{
     }
 
     @Override
-    public GameData getGameData(String gameName) throws DataAccessException {
+    public GameData getGameData(int gameID) throws DataAccessException {
         for (GameData game : gameData) {
-            if (game.gameName().equals(gameName)) {
+            if (game.gameID() == gameID) {
                 return game;
             }
         }
-        throw new DataAccessException("Game doesn't exist with that name");
+        throw new DataAccessException("Game doesn't exist with that ID");
     }
 
     @Override
@@ -73,6 +73,16 @@ public class MemoryDataAccess implements DataAccess{
         this.gameData.add(new GameData(nextGameID, gameData));
         nextGameID++;
         return nextGameID - 1;
+    }
+
+    @Override
+    public void editGameData(GameData gameData) {
+        for (GameData game : this.gameData) {
+            if (game.gameID() == gameData.gameID()) {
+                int index = this.gameData.indexOf(game);
+                this.gameData.set(index, gameData);
+            }
+        }
     }
 
     @Override
