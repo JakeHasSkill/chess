@@ -21,11 +21,14 @@ public class GameLogicService {
     }
 
     public AuthData registerUser(UserData userData) {
+        if (userData == null) {
+            throw new InvalidRequestException("UserData cannot be null");
+        }
+        if (userData.password() == null || userData.username() == null) {
+            throw new InvalidRequestException("Password/Username cannot be null");
+        }
         if (getUser(userData.username()) != null) {
             throw new AlreadyTakenException("Username already taken");
-        }
-        if (userData.password() == null) {
-            throw new InvalidRequestException("Password cannot be null");
         }
         // TODO: check password length (We only see the hash, is that possible here?)
         database.addUser(userData);
