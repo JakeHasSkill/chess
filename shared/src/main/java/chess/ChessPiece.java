@@ -44,10 +44,6 @@ public class ChessPiece {
         PAWN
     }
 
-    public boolean hasMoved() {
-        return hasMoved;
-    }
-
     public void setHasMoved(boolean hasMoved) {
         this.hasMoved = hasMoved;
     }
@@ -103,7 +99,8 @@ public class ChessPiece {
             }
             case PAWN -> {
                 int dir = board.getPawnDirection(color);
-                if (board.pawnStartingPositions(color).contains(myPosition) && board.getPiece(new ChessPosition(myPosition.getRow() + dir, myPosition.getColumn())) == null) {
+                if (board.pawnStartingPositions(color).contains(myPosition)
+                        && board.getPiece(new ChessPosition(myPosition.getRow() + dir, myPosition.getColumn())) == null) {
                     singlePositionMovement(board, myPosition, new int[]{dir * 2, 0}, validMoves, false, true);
                 }
                 singlePositionMovement(board, myPosition, new int[]{dir, 0}, validMoves, false, true);
@@ -121,7 +118,8 @@ public class ChessPiece {
      * Helper function for pieceMoves
      * For pieces that move to single positions like the King, pawns, and knight
      */
-    private void singlePositionMovement(ChessBoard board, ChessPosition myPosition, int[] i, ArrayList<ChessMove> validMoves, boolean canAttack, boolean canMoveIfEmpty) {
+    private void singlePositionMovement(ChessBoard board, ChessPosition myPosition, int[] i,
+                                        ArrayList<ChessMove> validMoves, boolean canAttack, boolean canMoveIfEmpty) {
         ChessPosition nextPosition = new ChessPosition(myPosition.getRow() + i[0], myPosition.getColumn() + i[1]);
         if (!nextPosition.validPosition()) {return;}
         if (board.getPiece(nextPosition) != null) {
