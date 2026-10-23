@@ -41,15 +41,9 @@ public class ChessPosition {
 
     @Override
     public boolean equals(Object object) {
-        if (object == null) {
-            return false;
-        }
-        if (this == object) {
-            return true;
-        }
-        if (object.getClass() != this.getClass()) {
-            return false;
-        }
+        if (object == null) {return false;}
+        if (this == object) {return true;}
+        if (object.getClass() != this.getClass()) {return false;}
         ChessPosition that = (ChessPosition) object;
         return this.row == that.row && this.col == that.col;
     }

@@ -20,8 +20,8 @@ public class ChessBoard{
     public ChessBoard(ChessBoard boardToCopy) {
         for (int i = 0; i <= 7; i++) {
             for (int j = 0; j <= 7; j++) {
-                if (boardToCopy.board[i][j] == null) board[i][j] = null;
-                else board[i][j] = new ChessPiece(boardToCopy.board[i][j]);
+                if (boardToCopy.board[i][j] == null) {board[i][j] = null;}
+                else {board[i][j] = new ChessPiece(boardToCopy.board[i][j]);}
             }
         }
     }

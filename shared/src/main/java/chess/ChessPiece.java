@@ -123,16 +123,12 @@ public class ChessPiece {
      */
     private void singlePositionMovement(ChessBoard board, ChessPosition myPosition, int[] i, ArrayList<ChessMove> validMoves, boolean canAttack, boolean canMoveIfEmpty) {
         ChessPosition nextPosition = new ChessPosition(myPosition.getRow() + i[0], myPosition.getColumn() + i[1]);
-        if (!nextPosition.validPosition())
-            return;
+        if (!nextPosition.validPosition()) {return;}
         if (board.getPiece(nextPosition) != null) {
-            if (board.getPiece(nextPosition).color == color)
-                return;
-            if (!canAttack)
-                return;
+            if (board.getPiece(nextPosition).color == color) {return;}
+            if (!canAttack) {return;}
         }
-        else if (!canMoveIfEmpty)
-            return;
+        else if (!canMoveIfEmpty) {return;}
         if (PieceType.PAWN.equals(type) && board.pawnPromotionPositions(color).contains(nextPosition)) {
             validMoves.addAll(List.of(
                     new ChessMove(myPosition, nextPosition, PieceType.QUEEN),
@@ -141,7 +137,7 @@ public class ChessPiece {
                     new ChessMove(myPosition, nextPosition, PieceType.KNIGHT)
             ));
         }
-        else validMoves.add(new ChessMove(myPosition, nextPosition, null));
+        else {validMoves.add(new ChessMove(myPosition, nextPosition, null));}
     }
 
     /**
@@ -152,11 +148,9 @@ public class ChessPiece {
         int j = 1;
         while (true) {
             ChessPosition nextPosition = new ChessPosition(myPosition.getRow() + (i[0] * j), myPosition.getColumn() + (i[1] * j));
-            if (!nextPosition.validPosition())
-                break;
+            if (!nextPosition.validPosition()) {break;}
             if (board.getPiece(nextPosition) != null) {
-                if (board.getPiece(nextPosition).color == color)
-                    break;
+                if (board.getPiece(nextPosition).color == color) {break;}
                 validMoves.add(new ChessMove(myPosition, nextPosition, null));
                 break;
             }
@@ -167,9 +161,9 @@ public class ChessPiece {
 
     @Override
     public boolean equals(Object object) {
-        if (object == null) return false;
-        if (this == object) return true;
-        if (object.getClass() != this.getClass()) return false;
+        if (object == null) {return false;}
+        if (this == object) {return true;}
+        if (object.getClass() != this.getClass()) {return false;}
         ChessPiece that = (ChessPiece) object;
         return this.type == that.type && this.color == that.color;
     }

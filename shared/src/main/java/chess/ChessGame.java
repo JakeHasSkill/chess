@@ -45,8 +45,8 @@ public class ChessGame {
     }
 
     public static TeamColor otherTeam(TeamColor teamColor) {
-        if (teamColor == TeamColor.WHITE) return TeamColor.BLACK;
-        else return TeamColor.WHITE;
+        if (teamColor == TeamColor.WHITE) {return TeamColor.BLACK;}
+        else {return TeamColor.WHITE;}
     }
 
     /**
@@ -113,7 +113,9 @@ public class ChessGame {
      * Does not check to see if a move is valid
      */
     public static ChessBoard testMove(ChessMove move, ChessBoard board) {
-        if (board.getPiece(move.getStartPosition()) == null) throw new RuntimeException("testMove got a move for a piece that is null");
+        if (board.getPiece(move.getStartPosition()) == null) {
+            throw new RuntimeException("testMove got a move for a piece that is null");
+        }
         ChessBoard newBoard = new ChessBoard(board);
         newBoard.movePiece(move.getStartPosition(), move.getEndPosition());
         return newBoard;
@@ -123,14 +125,14 @@ public class ChessGame {
      * Gets all possible moves a player could make, not considering check logic
      */
     private static ArrayList<ChessMove> getTeamMoves(TeamColor teamColor, ChessBoard board) {
-        if (board == null) return new ArrayList<>();
+        if (board == null) {return new ArrayList<>();}
         ArrayList<ChessMove> allMoves = new ArrayList<>();
         for (int col = 1; col <= 8; col++) {
             for (int row = 1; row <= 8; row++) {
                 ChessPosition position = new ChessPosition(row, col);
                 ChessPiece piece = board.getPiece(position);
-                if (piece == null) continue;
-                if (piece.getTeamColor() != teamColor) continue;
+                if (piece == null) {continue;}
+                if (piece.getTeamColor() != teamColor) {continue;}
                 allMoves.addAll(piece.pieceMoves(board, position));
             }
         }
@@ -146,7 +148,7 @@ public class ChessGame {
 
         ArrayList<ChessMove> inCheckMoves = new ArrayList<>();
         for (ChessMove move : allMoves) {
-            if (board.getPiece(move.getEndPosition()) == null) continue;
+            if (board.getPiece(move.getEndPosition()) == null) {continue;}
             if (board.getPiece(move.getEndPosition()).getPieceType().equals(ChessPiece.PieceType.KING)) {
                 inCheckMoves.add(move);
             }
@@ -177,7 +179,7 @@ public class ChessGame {
         ArrayList<ChessMove> avoidingMoves = new ArrayList<>();
         for (ChessMove move : possibleMoves) {
             ChessBoard newBoard = testMove(move, board);
-            if (isInCheck(teamColor, newBoard)) continue;
+            if (isInCheck(teamColor, newBoard)) {continue;}
             avoidingMoves.add(move);
         }
         return avoidingMoves;
@@ -200,7 +202,7 @@ public class ChessGame {
         ArrayList<ChessMove> moves = new ArrayList<>();
         for (ChessMove move : getTeamMoves(teamColor, board)) {
             ChessBoard nextMoveBoard = testMove(move, board);
-            if (isInCheck(teamColor, nextMoveBoard)) continue;
+            if (isInCheck(teamColor, nextMoveBoard)) {continue;}
             moves.add(move);
         }
         return moves;
@@ -214,7 +216,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        if (isInCheck(teamColor)) return false;
+        if (isInCheck(teamColor)) {return false;}
         return getMovesMinusStalemate(teamColor, this.board).isEmpty();
     }
 
@@ -238,9 +240,9 @@ public class ChessGame {
 
     @Override
     public boolean equals(Object object) {
-        if (object == null) return false;
-        if (this == object) return true;
-        if (object.getClass() != this.getClass()) return false;
+        if (object == null) {return false;}
+        if (this == object) {return true;}
+        if (object.getClass() != this.getClass()) {return false;}
         ChessGame chessGame = (ChessGame) object;
         return Objects.equals(board, chessGame.board) && Objects.equals(lastMove, chessGame.lastMove) && whoseTurn == chessGame.whoseTurn;
     }
