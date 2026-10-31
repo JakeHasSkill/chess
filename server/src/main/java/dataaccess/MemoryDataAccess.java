@@ -32,8 +32,13 @@ public class MemoryDataAccess implements DataAccess{
     }
 
     @Override
-    public ArrayList<AuthData> getAuthData() {
-        return new ArrayList<>(authData);
+    public AuthData getAuthData(String authToken) {
+        for (AuthData data : authData) {
+            if (authToken.equals(data.authToken())) {
+                return new AuthData(data.authToken(), data.username());
+            }
+        }
+        return null;
     }
 
     @Override

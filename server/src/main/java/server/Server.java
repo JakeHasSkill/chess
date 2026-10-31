@@ -83,6 +83,9 @@ public class Server {
         } catch (InvalidAuthToken e) {
             context.status(401);
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        } catch (DataAccessException e) {
+            context.status(500);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         }
     }
 
@@ -96,6 +99,9 @@ public class Server {
             context.result("{\"games\":" + gameDataString + "}");
         } catch (InvalidAuthToken e) {
             context.status(401);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        } catch (DataAccessException e) {
+            context.status(500);
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         }
     }
@@ -112,6 +118,9 @@ public class Server {
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         } catch (InvalidRequestException e) {
             context.status(400);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        } catch (DataAccessException e) {
+            context.status(500);
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         }
     }
@@ -131,6 +140,9 @@ public class Server {
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         } catch (AlreadyTakenException e) {
             context.status(403);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        } catch (DataAccessException e) {
+            context.status(500);
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         }
     }

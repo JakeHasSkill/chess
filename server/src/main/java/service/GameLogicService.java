@@ -47,7 +47,7 @@ public class GameLogicService {
         return generateAuthData(userDataHashed);
     }
 
-    private AuthData generateAuthData(UserData userData) {
+    private AuthData generateAuthData(UserData userData) throws DataAccessException {
         UUID uuid = UUID.randomUUID();
         String authToken = uuid.toString();
         AuthData authData = new AuthData(authToken, userData.username());
@@ -72,39 +72,26 @@ public class GameLogicService {
         return generateAuthData(userData);
     }
 
-    public void logout(String authToken) {
-        if (authToken == null) {
-            throw new InvalidAuthToken("AuthToken cannot be null");
-        }
-        ArrayList<AuthData> authData = database.getAuthData();
-        for (AuthData data : authData) {
-            if (data.authToken().equals(authToken)) {
-                database.deleteAuthData(data);
-                return;
-            }
-        }
-        throw new InvalidAuthToken("Invalid AuthToken");
+    public void logout(String authToken) throws DataAccessException {
+        if (authToken == null) {throw new InvalidAuthToken("AuthToken cannot be null");}
+        AuthData authData = database.getAuthData(authToken);
+        if (authData == null) {throw new InvalidAuthToken("Invalid AuthToken");}
+        database.deleteAuthData(authData);
     }
 
-    private AuthData validateAuthToken(String authToken) {
-        if (authToken == null) {
-            throw new InvalidAuthToken("AuthToken cannot be null");
-        }
-        ArrayList<AuthData> authData = database.getAuthData();
-        for (AuthData data : authData) {
-            if (data.authToken().equals(authToken)) {
-                return data;
-            }
-        }
-        throw new InvalidAuthToken("Invalid AuthToken");
+    private AuthData validateAuthToken(String authToken) throws DataAccessException {
+        if (authToken == null) {throw new InvalidAuthToken("AuthToken cannot be null");}
+        AuthData authData = database.getAuthData(authToken);
+        if (authData == null) {throw new InvalidAuthToken("Invalid AuthToken");}
+        return authData;
     }
 
-    public ArrayList<GameData> listGames(String authToken) {
+    public ArrayList<GameData> listGames(String authToken) throws DataAccessException {
         validateAuthToken(authToken);
         return database.getAllGameData();
     }
 
-    public int createGame(GameData gameData, String authToken) {
+    public int createGame(GameData gameData, String authToken) throws DataAccessException {
         validateAuthToken(authToken);
         if (gameData == null) {
             throw new InvalidRequestException("GameData cannot be null");
@@ -115,7 +102,7 @@ public class GameLogicService {
         return database.addGameData(gameData);
     }
 
-    public void joinGame(JoinData joinData, String authToken) {
+    public void joinGame(JoinData joinData, String authToken) throws DataAccessException {
         AuthData authData = validateAuthToken(authToken);
         if (joinData == null) {
             throw new InvalidRequestException("JoinData cannot be null");

@@ -10,22 +10,27 @@ import java.util.ArrayList;
 public class MariaDBDataAccess implements DataAccess {
     public MariaDBDataAccess() throws DataAccessException{
         DatabaseManager.createDatabase();
-        String databaseSetupCommands = """
+        String createUsersTable = """
                 CREATE TABLE IF NOT EXISTS Users (
                 `Username` varchar(256) NOT NULL,
                 `PasswordHash` TEXT NOT NULL,
                 `Email` varchar(256) DEFAULT NULL,
                 PRIMARY KEY (`Username`)
                 ) CHARSET=utf8mb4;
+                """;
+        String createAuthDataTable = """
                 CREATE TABLE IF NOT EXISTS AuthData (
-                    `AuthToken` TEXT NOT NULL,
-                    `Username` varchar(256) NOT NULL,
-                    PRIMARY KEY (`AuthToken`)
+                `AuthToken` CHAR(60) NOT NULL,
+                `Username` varchar(256) NOT NULL,
+                PRIMARY KEY (`AuthToken`)
                 ) CHARSET=utf8mb4;
                 """;
         try (Connection connection = DatabaseManager.getConnection()) {
-            try (PreparedStatement preparedStatement = connection.prepareStatement(databaseSetupCommands)) {
-                preparedStatement.executeUpdate();
+            try (PreparedStatement statement = connection.prepareStatement(createUsersTable)) {
+                statement.executeUpdate();
+            }
+            try (PreparedStatement statement = connection.prepareStatement(createAuthDataTable)) {
+                statement.executeUpdate();
             }
         } catch (SQLException e) {
             throw new DataAccessException("Failed to setup database");
@@ -68,8 +73,21 @@ public class MariaDBDataAccess implements DataAccess {
     }
 
     @Override
-    public ArrayList<AuthData> getAuthData() {
-        return null;
+    public AuthData getAuthData(String authToken) throws DataAccessException {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String command = "SELECT AuthToken, Username FROM AuthData WHERE AuthToken=?";
+            try (PreparedStatement statement = connection.prepareStatement(command)) {
+                statement.setString(1, authToken);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (!result.next()) {return null;}
+                    String username = result.getString("Username");
+                    return new AuthData(authToken, username);
+                }
+            }
+        }
+        catch (DataAccessException | SQLException e) {
+            throw new DataAccessException("Error getting auth data");
+        }
     }
 
     @Override
@@ -89,7 +107,7 @@ public class MariaDBDataAccess implements DataAccess {
     @Override
     public void addAuthData(AuthData authData) throws DataAccessException {
         try (Connection sql = DatabaseManager.getConnection()) {
-            String command = "INSERT INTO AuthData (AuthData, Username) VALUES (?, ?, ?)";
+            String command = "INSERT INTO AuthData (AuthToken, Username) VALUES (?, ?)";
             try (PreparedStatement statement = sql.prepareStatement(command)) {
                 statement.setString(1, authData.authToken());
                 statement.setString(2, authData.username());
