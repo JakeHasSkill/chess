@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.DataAccessException;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.*;
@@ -49,6 +50,9 @@ public class Server {
         } catch (InvalidRequestException e) {
             context.status(400);
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        } catch (DataAccessException e) {
+            context.status(500);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         }
     }
 
@@ -64,6 +68,9 @@ public class Server {
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         } catch (InvalidRequestException e) {
             context.status(400);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        } catch (DataAccessException e) {
+            context.status(500);
             context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
         }
     }
@@ -129,6 +136,12 @@ public class Server {
     }
 
     private void clearEntireDatabase(Context context) {
-        service.clearEntireDatabase();
+        try {
+            service.clearEntireDatabase();
+            context.status(200);
+        } catch (DataAccessException e) {
+            context.status(500);
+            context.result("{\"message\": \"Error: " + e.getMessage() + "\"}");
+        }
     }
 }

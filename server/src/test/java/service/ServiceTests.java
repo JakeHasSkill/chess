@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import dataaccess.DataAccessException;
 import model.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -15,12 +16,12 @@ public class ServiceTests {
     }
 
     @AfterEach
-    public void clear() {
+    public void clear() throws DataAccessException {
         service.clearEntireDatabase();
     }
 
     @Test
-    public void createUser() {
+    public void createUser() throws DataAccessException {
         UserData userData = new UserData("player1", "player1_secure", "player1_email");
         UserData nullUser = new UserData(null, "password", "email");
         UserData nullPassword = new UserData("username", null, "email");
@@ -33,7 +34,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void login() {
+    public void login() throws DataAccessException {
         UserData userData = new UserData("player1", "player1_secure", "player1_email");
         AuthData authData = service.registerUser(userData);
         Assertions.assertEquals("player1", authData.username());
@@ -51,7 +52,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void logout() {
+    public void logout() throws DataAccessException {
         UserData userData = new UserData("player1", "player1_secure", "player1_email");
         AuthData authData = service.registerUser(userData);
         Assertions.assertThrows(InvalidAuthToken.class, () -> service.logout("not_a_token"));
@@ -61,7 +62,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void createGame() {
+    public void createGame() throws DataAccessException {
         UserData userData = new UserData("player1", "player1_secure", "player1_email");
         AuthData authData = service.registerUser(userData);
         GameData gameData = new GameData(0, null, null, "chess", new ChessGame());
@@ -78,7 +79,7 @@ public class ServiceTests {
     }
 
     @Test
-    public void joinGame() {
+    public void joinGame() throws DataAccessException {
         UserData user1 = new UserData("player1", "player1_secure", "player1_email");
         UserData user2 = new UserData("player2", "player2_secure", "player2_email");
         AuthData auth1 = service.registerUser(user1);

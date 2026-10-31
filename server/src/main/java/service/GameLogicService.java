@@ -3,6 +3,7 @@ package service;
 import chess.ChessGame;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
+import dataaccess.MariaDBDataAccess;
 import dataaccess.MemoryDataAccess;
 import model.*;
 
@@ -13,14 +14,20 @@ public class GameLogicService {
     private DataAccess database;
 
     public GameLogicService() {
-        this.database = new MemoryDataAccess();
+        try {
+            this.database = new MariaDBDataAccess();
+        }
+        catch (DataAccessException e) {
+            this.database = new MemoryDataAccess();
+            System.err.println("Creating SQL Database Access failed, falling back to in-memory database");
+        }
     }
 
-    public UserData getUser(String username) {
+    public UserData getUser(String username) throws DataAccessException {
         return database.getUserData(username);
     }
 
-    public AuthData registerUser(UserData userData) {
+    public AuthData registerUser(UserData userData) throws DataAccessException {
         if (userData == null) {
             throw new InvalidRequestException("UserData cannot be null");
         }
@@ -43,7 +50,7 @@ public class GameLogicService {
         return authData;
     }
 
-    public AuthData login(LoginData loginData) {
+    public AuthData login(LoginData loginData) throws DataAccessException {
         if (loginData.password() == null) {
             throw new InvalidRequestException("Password cannot be null");
         }
@@ -130,7 +137,7 @@ public class GameLogicService {
         }
     }
 
-    public void clearEntireDatabase() {
+    public void clearEntireDatabase() throws DataAccessException {
         database.clearEntireDatabase();
         /* TODO: add a command line flag that enables this, have it be disabled by default
          *  If it is enabled give a warning in std.err
