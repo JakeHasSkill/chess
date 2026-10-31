@@ -6,6 +6,7 @@ import dataaccess.DataAccessException;
 import dataaccess.MariaDBDataAccess;
 import dataaccess.MemoryDataAccess;
 import model.*;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -37,9 +38,13 @@ public class GameLogicService {
         if (getUser(userData.username()) != null) {
             throw new AlreadyTakenException("Username already taken");
         }
-        // TODO: check password length (We only see the hash, is that possible here?)
-        database.addUser(userData);
-        return generateAuthData(userData);
+        if (userData.password().length() < 7) {
+            throw new InvalidRequestException("Password must be 8 characters or longer");
+        }
+        String hashedPassword = BCrypt.hashpw(userData.password(), BCrypt.gensalt());
+        UserData userDataHashed = new UserData(userData.username(), hashedPassword, userData.email());
+        database.addUser(userDataHashed);
+        return generateAuthData(userDataHashed);
     }
 
     private AuthData generateAuthData(UserData userData) {
@@ -61,7 +66,7 @@ public class GameLogicService {
         if (userData == null) {
             throw new InvalidLoginException("Incorrect username or password");
         }
-        if (!userData.password().equals(loginData.password())) {
+        if (!BCrypt.checkpw(loginData.password(), userData.password())) {
             throw new InvalidLoginException("Incorrect username or password");
         }
         return generateAuthData(userData);

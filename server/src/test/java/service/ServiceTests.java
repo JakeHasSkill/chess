@@ -26,7 +26,8 @@ public class ServiceTests {
         UserData nullUser = new UserData(null, "password", "email");
         UserData nullPassword = new UserData("username", null, "email");
         service.registerUser(userData);
-        Assertions.assertEquals(userData, service.getUser("player1"));
+        Assertions.assertEquals(userData.username(), service.getUser("player1").username());
+        Assertions.assertEquals(userData.email(), service.getUser("player1").email());
         Assertions.assertThrows(AlreadyTakenException.class, () -> service.registerUser(userData));
         Assertions.assertThrows(InvalidRequestException.class, () -> service.registerUser(nullUser));
         Assertions.assertThrows(InvalidRequestException.class, () -> service.registerUser(nullPassword));
