@@ -10,8 +10,8 @@ public interface DataAccess {
     UserData getUserData(String username) throws DataAccessException;
     void addUser(UserData userData) throws DataAccessException;
     ArrayList<AuthData> getAuthData();
-    void deleteAuthData(AuthData authData);
-    void addAuthData(AuthData authData);
+    void deleteAuthData(AuthData authData) throws DataAccessException;
+    void addAuthData(AuthData authData) throws DataAccessException;
     GameData getGameData(int gameID) throws DataAccessException;
     int addGameData(GameData gameData);
     void editGameData(GameData gameData);

@@ -16,7 +16,12 @@ public class MariaDBDataAccess implements DataAccess {
                 `PasswordHash` TEXT NOT NULL,
                 `Email` varchar(256) DEFAULT NULL,
                 PRIMARY KEY (`Username`)
-                ) CHARSET=utf8mb4
+                ) CHARSET=utf8mb4;
+                CREATE TABLE IF NOT EXISTS AuthData (
+                    `AuthToken` TEXT NOT NULL,
+                    `Username` varchar(256) NOT NULL,
+                    PRIMARY KEY (`AuthToken`)
+                ) CHARSET=utf8mb4;
                 """;
         try (Connection connection = DatabaseManager.getConnection()) {
             try (PreparedStatement preparedStatement = connection.prepareStatement(databaseSetupCommands)) {
@@ -68,13 +73,32 @@ public class MariaDBDataAccess implements DataAccess {
     }
 
     @Override
-    public void deleteAuthData(AuthData authData) {
-
+    public void deleteAuthData(AuthData authData) throws DataAccessException {
+        try (Connection sql = DatabaseManager.getConnection()) {
+            String command = "DELETE FROM AuthData WHERE AuthToken=?";
+            try (PreparedStatement statement = sql.prepareStatement(command)) {
+                statement.setString(1, authData.authToken());
+                statement.executeUpdate();
+            }
+        }
+        catch (DataAccessException | SQLException e) {
+            throw new DataAccessException("Error deleting auth data");
+        }
     }
 
     @Override
-    public void addAuthData(AuthData authData) {
-
+    public void addAuthData(AuthData authData) throws DataAccessException {
+        try (Connection sql = DatabaseManager.getConnection()) {
+            String command = "INSERT INTO AuthData (AuthData, Username) VALUES (?, ?, ?)";
+            try (PreparedStatement statement = sql.prepareStatement(command)) {
+                statement.setString(1, authData.authToken());
+                statement.setString(2, authData.username());
+                statement.executeUpdate();
+            }
+        }
+        catch (DataAccessException | SQLException e) {
+            throw new DataAccessException("Error adding auth data");
+        }
     }
 
     @Override
