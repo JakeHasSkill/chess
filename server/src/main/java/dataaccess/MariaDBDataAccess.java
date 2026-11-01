@@ -25,11 +25,23 @@ public class MariaDBDataAccess implements DataAccess {
                 PRIMARY KEY (`AuthToken`)
                 ) CHARSET=utf8mb4;
                 """;
+        String createGameDataTable = """
+                CREATE TABLE IF NOT EXISTS GameData (
+                `GameID` int AUTO_INCREMENT PRIMARY KEY,
+                `WhiteUsername` varchar(256),
+                `BlackUsername` varchar(256),
+                `GameName` varchar(256) NOT NULL,
+                `ChessGame` TEXT NOT NULL
+                ) CHARSET=utf8mb4;
+                """;
         try (Connection connection = DatabaseManager.getConnection()) {
             try (PreparedStatement statement = connection.prepareStatement(createUsersTable)) {
                 statement.executeUpdate();
             }
             try (PreparedStatement statement = connection.prepareStatement(createAuthDataTable)) {
+                statement.executeUpdate();
+            }
+            try (PreparedStatement statement = connection.prepareStatement(createGameDataTable)) {
                 statement.executeUpdate();
             }
         } catch (SQLException e) {
