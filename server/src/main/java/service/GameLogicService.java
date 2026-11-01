@@ -112,6 +112,7 @@ public class GameLogicService {
         }
         try {
             GameData game = database.getGameData(joinData.gameID());
+            if (game == null) {throw new InvalidRequestException("GameID doesn't exist");}
             if (joinData.playerColor().equals(ChessGame.TeamColor.BLACK)) {
                 if (game.blackUsername() != null) {
                     throw new AlreadyTakenException("Black player is already assigned");

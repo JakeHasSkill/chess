@@ -11,8 +11,9 @@ import org.junit.jupiter.api.Test;
 public class ServiceTests {
     private static GameLogicService service;
     @BeforeAll
-    public static void instantiateService() {
+    public static void instantiateService() throws DataAccessException {
         service = new GameLogicService();
+        service.clearEntireDatabase();
     }
 
     @AfterEach

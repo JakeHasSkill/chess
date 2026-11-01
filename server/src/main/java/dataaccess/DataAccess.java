@@ -13,8 +13,8 @@ public interface DataAccess {
     void deleteAuthData(AuthData authData) throws DataAccessException;
     void addAuthData(AuthData authData) throws DataAccessException;
     GameData getGameData(int gameID) throws DataAccessException;
-    int addGameData(GameData gameData);
-    void editGameData(GameData gameData);
-    ArrayList<GameData> getAllGameData();
+    int addGameData(GameData gameData) throws DataAccessException;
+    void editGameData(GameData gameData) throws DataAccessException;
+    ArrayList<GameData> getAllGameData() throws DataAccessException;
     void clearEntireDatabase() throws DataAccessException; // Yes this is sketchy
 }
