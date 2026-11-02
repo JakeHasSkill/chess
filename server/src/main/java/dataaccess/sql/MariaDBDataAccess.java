@@ -1,7 +1,9 @@
-package dataaccess;
+package dataaccess.sql;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import dataaccess.DataAccess;
+import dataaccess.DataAccessException;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -10,7 +12,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class MariaDBDataAccess implements DataAccess {
-    public MariaDBDataAccess() throws DataAccessException{
+    public MariaDBDataAccess() throws DataAccessException {
         DatabaseManager.createDatabase();
         String createUsersTable = """
                 CREATE TABLE IF NOT EXISTS Users (

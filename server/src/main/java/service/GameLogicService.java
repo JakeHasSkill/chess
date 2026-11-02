@@ -3,7 +3,7 @@ package service;
 import chess.ChessGame;
 import dataaccess.DataAccess;
 import dataaccess.DataAccessException;
-import dataaccess.MariaDBDataAccess;
+import dataaccess.sql.MariaDBDataAccess;
 import dataaccess.MemoryDataAccess;
 import model.*;
 import org.mindrot.jbcrypt.BCrypt;
