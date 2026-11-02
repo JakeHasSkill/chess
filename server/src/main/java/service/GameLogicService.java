@@ -38,9 +38,9 @@ public class GameLogicService {
         if (getUser(userData.username()) != null) {
             throw new AlreadyTakenException("Username already taken");
         }
-        if (userData.password().length() < 7) {
-            throw new InvalidRequestException("Password must be 8 characters or longer");
-        }
+//        if (userData.password().length() < 7) {
+//            throw new InvalidRequestException("Password must be 8 characters or longer");
+//        }
         String hashedPassword = BCrypt.hashpw(userData.password(), BCrypt.gensalt());
         UserData userDataHashed = new UserData(userData.username(), hashedPassword, userData.email());
         database.addUser(userDataHashed);

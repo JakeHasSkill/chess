@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+
 public class ServiceTests {
     private static GameLogicService service;
     @BeforeAll
@@ -101,5 +103,19 @@ public class ServiceTests {
         Assertions.assertThrows(InvalidRequestException.class, () -> service.joinGame(null, auth2.authToken()));
         Assertions.assertThrows(InvalidRequestException.class, () -> service.joinGame(nullColor, auth2.authToken()));
         Assertions.assertThrows(InvalidRequestException.class, () -> service.joinGame(wrongID, auth2.authToken()));
+    }
+
+    @Test
+    public void listMultipleGames() throws DataAccessException {
+        UserData user = new UserData("player", "player_secure", "player_email");
+        AuthData auth = service.registerUser(user);
+        GameData gameData1 = new GameData(0, null, null, "chess1", new ChessGame());
+        GameData gameData2 = new GameData(0, null, null, "chess2", new ChessGame());
+        GameData gameData3 = new GameData(0, null, null, "chess3", new ChessGame());
+        service.createGame(gameData1, auth.authToken());
+        service.createGame(gameData2, auth.authToken());
+        service.createGame(gameData3, auth.authToken());
+        ArrayList<GameData> games = service.listGames(auth.authToken());
+        Assertions.assertEquals(3, games.size());
     }
 }
