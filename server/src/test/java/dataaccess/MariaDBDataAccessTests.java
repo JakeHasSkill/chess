@@ -1,10 +1,6 @@
-package dataAccess;
+package dataaccess;
 
 import chess.ChessGame;
-import dataaccess.DataAccess;
-import dataaccess.DataAccessException;
-import dataaccess.DatabaseManager;
-import dataaccess.MariaDBDataAccess;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -37,7 +33,7 @@ public class MariaDBDataAccessTests {
     }
 
     @Test
-    public void AuthData() throws DataAccessException {
+    public void authData() throws DataAccessException {
         UserData user = new UserData("username", "secure_password", "email");
         database.addUser(user);
         AuthData auth1 = new AuthData("111111111122222222223333333333444444444455555555556666666666", "username");
