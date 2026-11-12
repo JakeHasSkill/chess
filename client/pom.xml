@@ -1,0 +1,21 @@
+<project xmlns="http://maven.apache.org/POM/4.1.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>chess</groupId>
+        <artifactId>chess</artifactId>
+        <version>1.0.0</version>
+    </parent>
+    <artifactId>client</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.googlecode.lanterna</groupId>
+            <artifactId>lanterna</artifactId>
+            <version>3.1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>chess</groupId>
+            <artifactId>shared</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+    </dependencies>
+</project>
