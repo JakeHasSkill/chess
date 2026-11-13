@@ -12,4 +12,3 @@ out/
 ### Chess project ###
 server/**/db.properties
 
-.idea/
