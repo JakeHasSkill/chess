@@ -10,11 +10,11 @@ public class ServerFacade {
     }
 
     public AuthData register(String username, String password, String email) {
-
+        return null;
     }
 
     public AuthData login(String username, String password) {
-
+        return null;
     }
 
     public void logout(String authToken) {
@@ -22,7 +22,7 @@ public class ServerFacade {
     }
 
     public ArrayList<GameData> listGames(String authToken) {
-
+        return null;
     }
 
     public void createGame(String authToken, GameData game) {

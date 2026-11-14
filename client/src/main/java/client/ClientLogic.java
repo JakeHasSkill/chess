@@ -26,11 +26,11 @@ public class ClientLogic {
     }
 
     public boolean createGame(String name) {
-
+        return false;
     }
 
     public ArrayList<GameData> listGames() {
-
+        return null;
     }
 
     public void joinGame(int gameID, ChessGame.TeamColor color) {

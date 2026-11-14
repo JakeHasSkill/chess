@@ -11,6 +11,13 @@ public class EscapeSequences {
     public static final String ERASE_SCREEN = UNICODE_ESCAPE + "[H" + UNICODE_ESCAPE + "[2J";
     public static final String ERASE_LINE = UNICODE_ESCAPE + "[2K";
 
+    public static final String ENTER_ALT_SCREEN = UNICODE_ESCAPE + "[?1049H";
+    public static final String EXIT_ALT_SCREEN = UNICODE_ESCAPE + "[?1049l";
+    public static final String HIDE_CURSOR = UNICODE_ESCAPE + "[?25l";
+    public static final String SHOW_CURSOR = UNICODE_ESCAPE + "[?25h";
+
+    public static final String RESET_ALL_FORMATTING = UNICODE_ESCAPE + "[0M";
+
     public static final String SET_TEXT_BOLD = UNICODE_ESCAPE + "[1m";
     public static final String SET_TEXT_FAINT = UNICODE_ESCAPE + "[2m";
     public static final String RESET_TEXT_BOLD_FAINT = UNICODE_ESCAPE + "[22m";
@@ -61,5 +68,5 @@ public class EscapeSequences {
     public static final String BLACK_PAWN = " ♟ ";
     public static final String EMPTY = " \u2003 ";
 
-    public static String moveCursorToLocation(int x, int y) { return UNICODE_ESCAPE + "[" + y + ";" + x + "H"; }
+    public static String moveCursor(int x, int y) { return UNICODE_ESCAPE + "[" + y + ";" + x + "H"; }
 }
