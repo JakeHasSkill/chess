@@ -1,6 +1,5 @@
 package ui;
 
-
 import java.io.IOException;
 
 import static ui.EscapeSequences.*;
@@ -26,12 +25,8 @@ public class CommandLineUI {
 
         setDimensions();
 
-        System.out.print(ENTER_ALT_SCREEN + ERASE_SCREEN + "Chess UI :)");
+        System.out.print(ENTER_ALT_SCREEN + ERASE_SCREEN + HIDE_CURSOR + "Chess UI :)");
         System.out.flush();
-
-        Thread keyListenerThread = new Thread(cliKeyListener);
-        keyListenerThread.setDaemon(true);
-        keyListenerThread.start();
 
         preLoginLoop();
 
@@ -68,22 +63,6 @@ public class CommandLineUI {
     private PreLoginOptions preLoginLoop() {
         PreLoginOptions highlightedOption = PreLoginOptions.LOGIN;
         while (true) {
-            var queue = cliKeyListener.getInputQueue();
-            CLIKeyListener.KeyPressEvent keyPress;
-            while ((keyPress = queue.poll()) != null) {
-                if (keyPress.key() == CLIKeyListener.Key.LEFT) {
-                    highlightedOption = PreLoginOptions.goLeft(highlightedOption);
-                }
-                else if (keyPress.key() == CLIKeyListener.Key.RIGHT) {
-                    highlightedOption = PreLoginOptions.goRight(highlightedOption);
-                }
-                else if (keyPress.key() == CLIKeyListener.Key.ENTER) {
-                    return highlightedOption;
-                }
-                else if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {
-                    return PreLoginOptions.QUIT;
-                }
-            }
             switch (highlightedOption) {
                 case LOGIN -> {drawLine(SET_TEXT_BOLD + "LOGIN" + RESET_ALL_FORMATTING + " | REGISTER | QUIT", RowAlign.CENTER);}
                 case REGISTER -> {drawLine("LOGIN | " + SET_TEXT_BOLD + "REGISTER" + RESET_ALL_FORMATTING + " | QUIT", RowAlign.CENTER);}
@@ -92,10 +71,18 @@ public class CommandLineUI {
             drawLine("———CHESS———", RowAlign.TOP);
             drawLine("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
             drawScreen();
-            try {
-                Thread.sleep(16);
-            } catch (InterruptedException e) {
-                System.err.println("Got interrupted in pre login loop");
+            CLIKeyListener.KeyPress keyPress = cliKeyListener.getNextKeyPress();
+            if (keyPress.key() == CLIKeyListener.Key.LEFT) {
+                highlightedOption = PreLoginOptions.goLeft(highlightedOption);
+            }
+            else if (keyPress.key() == CLIKeyListener.Key.RIGHT) {
+                highlightedOption = PreLoginOptions.goRight(highlightedOption);
+            }
+            else if (keyPress.key() == CLIKeyListener.Key.ENTER) {
+                return highlightedOption;
+            }
+            else if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {
+                return PreLoginOptions.QUIT;
             }
         }
     }
@@ -123,8 +110,8 @@ public class CommandLineUI {
         entireBuffer.append(screenBufferTop);
         entireBuffer.repeat("\r\n", ((terminalHeight - linesCenter) / 2) - linesTop);
         entireBuffer.append(screenBufferCenter);
-        entireBuffer.repeat("\r\n", ((terminalHeight - linesCenter) / 2) - linesBottom);
-        entireBuffer.append(screenBufferBottom);
+        entireBuffer.repeat("\r\n", ((terminalHeight - linesCenter + 1) / 2) - linesBottom);
+        entireBuffer.append(screenBufferBottom.toString().stripTrailing());
         System.out.print(entireBuffer);
         System.out.flush();
         screenBufferTop = new StringBuilder();
