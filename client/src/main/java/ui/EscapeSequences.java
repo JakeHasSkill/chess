@@ -8,7 +8,8 @@ public class EscapeSequences {
     private static final String UNICODE_ESCAPE = "\u001b";
     private static final String ANSI_ESCAPE = "\033";
 
-    public static final String ERASE_SCREEN = UNICODE_ESCAPE + "[H" + UNICODE_ESCAPE + "[2J";
+    public static final String ERASE_SCREEN = UNICODE_ESCAPE + "[H" + UNICODE_ESCAPE + "[2J" + UNICODE_ESCAPE + "[3J";
+
     public static final String ERASE_LINE = UNICODE_ESCAPE + "[2K";
 
     public static final String ENTER_ALT_SCREEN = UNICODE_ESCAPE + "[?1049H";
@@ -16,7 +17,7 @@ public class EscapeSequences {
     public static final String HIDE_CURSOR = UNICODE_ESCAPE + "[?25l";
     public static final String SHOW_CURSOR = UNICODE_ESCAPE + "[?25h";
 
-    public static final String RESET_ALL_FORMATTING = UNICODE_ESCAPE + "[0M";
+    public static final String RESET_ALL_FORMATTING = UNICODE_ESCAPE + "[0m";
 
     public static final String SET_TEXT_BOLD = UNICODE_ESCAPE + "[1m";
     public static final String SET_TEXT_FAINT = UNICODE_ESCAPE + "[2m";

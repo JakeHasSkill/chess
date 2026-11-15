@@ -2,13 +2,14 @@ package ui;
 
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import static ui.EscapeSequences.*;
 
 public class CommandLineUI {
     private final CLIKeyListener cliKeyListener = new CLIKeyListener();
     private int terminalWidth, terminalHeight;
+    private StringBuilder screenBufferCenter, screenBufferTop, screenBufferBottom;
+    private enum RowAlign {TOP, CENTER, BOTTOM}
 
     public CommandLineUI() {
         try {
@@ -19,6 +20,9 @@ public class CommandLineUI {
             return;
         }
         Runtime.getRuntime().addShutdownHook(new Thread(CommandLineUI::revertTerminal));
+        screenBufferCenter = new StringBuilder();
+        screenBufferTop = new StringBuilder();
+        screenBufferBottom = new StringBuilder();
 
         setDimensions();
 
@@ -80,7 +84,14 @@ public class CommandLineUI {
                     return PreLoginOptions.QUIT;
                 }
             }
-            drawLine("LOGIN | REGISTER | QUIT\nCurrent selection:" + highlightedOption.name(), 4);
+            switch (highlightedOption) {
+                case LOGIN -> {drawLine(SET_TEXT_BOLD + "LOGIN" + RESET_ALL_FORMATTING + " | REGISTER | QUIT", RowAlign.CENTER);}
+                case REGISTER -> {drawLine("LOGIN | " + SET_TEXT_BOLD + "REGISTER" + RESET_ALL_FORMATTING + " | QUIT", RowAlign.CENTER);}
+                case QUIT -> {drawLine("LOGIN | REGISTER | " + SET_TEXT_BOLD + "QUIT" + RESET_ALL_FORMATTING, RowAlign.CENTER);}
+            }
+            drawLine("———CHESS———", RowAlign.TOP);
+            drawLine("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
+            drawScreen();
             try {
                 Thread.sleep(16);
             } catch (InterruptedException e) {
@@ -90,11 +101,35 @@ public class CommandLineUI {
     }
 
     /**
-     *  Draws the string centered on a given line number
+     *  Draws the string centered to the middle of the line
      */
-    private void drawLine(String contents, int lineNumber) {
-        System.out.print(ERASE_SCREEN + contents + "\n" + terminalWidth + " | " + terminalHeight);
+    private void drawLine(String contents, RowAlign rowAlign) {
+        StringBuilder buffer = screenBufferCenter;
+        switch (rowAlign) {
+            case TOP -> buffer = screenBufferTop;
+            case BOTTOM -> buffer = screenBufferBottom;
+        }
+        buffer.repeat(" ", (terminalWidth - contents.replaceAll("\\e\\[[0-9;]*[a-zA-Z]|\\p{Cntrl}", "").length()) / 2);
+        buffer.append(contents);
+        buffer.append("\r\n");
+    }
+
+    private void drawScreen() {
+        StringBuilder entireBuffer = new StringBuilder();
+        System.out.print(ERASE_SCREEN);
+        int linesCenter = (int) screenBufferCenter.toString().lines().count();
+        int linesTop = (int) screenBufferTop.toString().lines().count();
+        int linesBottom = (int) screenBufferBottom.toString().lines().count();
+        entireBuffer.append(screenBufferTop);
+        entireBuffer.repeat("\r\n", ((terminalHeight - linesCenter) / 2) - linesTop);
+        entireBuffer.append(screenBufferCenter);
+        entireBuffer.repeat("\r\n", ((terminalHeight - linesCenter) / 2) - linesBottom);
+        entireBuffer.append(screenBufferBottom);
+        System.out.print(entireBuffer);
         System.out.flush();
+        screenBufferTop = new StringBuilder();
+        screenBufferCenter = new StringBuilder();
+        screenBufferBottom = new StringBuilder();
     }
 
     private static String runBashCommand(String command) throws IOException, InterruptedException {
@@ -111,7 +146,7 @@ public class CommandLineUI {
         catch (IOException | InterruptedException e) {
             System.err.println("Error restoring terminal to previous state");
         }
-        System.out.println(EXIT_ALT_SCREEN + RESET_ALL_FORMATTING + SHOW_CURSOR);
+        System.out.print(ERASE_SCREEN + EXIT_ALT_SCREEN + RESET_ALL_FORMATTING + SHOW_CURSOR + "Goodbye!\r\n");
         System.out.flush();
     }
 }
