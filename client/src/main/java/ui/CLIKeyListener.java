@@ -33,6 +33,7 @@ public class CLIKeyListener{
                     if (b == 'D') {return new KeyPress(Key.LEFT, '\0');}
                     continue;
                 }
+                if (b == '\\') {continue;}
                 return new KeyPress(Key.CHAR, (char) b);
             }
         } catch (IOException e) {

@@ -56,6 +56,13 @@ public class OptionGrid {
         }
     }
 
+    public String getValue(int row, int col) {
+        if (options[col][row].getClass() == TextField.class) {
+            return ((TextField) options[col][row]).getValue();
+        }
+        return "";
+    }
+
     @Override
     public String toString() {
         StringBuilder output = new StringBuilder();

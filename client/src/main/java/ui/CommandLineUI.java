@@ -2,15 +2,20 @@ package ui;
 
 import java.io.IOException;
 
+import client.ClientLogic;
 import static ui.EscapeSequences.*;
 
 public class CommandLineUI {
+    private ClientLogic clientLogic;
     private final CLIKeyListener cliKeyListener = new CLIKeyListener();
     private int terminalWidth, terminalHeight;
     private StringBuilder screenBufferCenter, screenBufferTop, screenBufferBottom;
     private enum RowAlign {TOP, CENTER, BOTTOM}
+    private Destination currentScreen;
 
-    public CommandLineUI() {
+    public CommandLineUI(ClientLogic clientLogic) {
+        this.clientLogic = clientLogic;
+        this.currentScreen = Destination.PRE_LOGIN;
         try {
             runBashCommand("stty raw -echo < /dev/tty");
         }
@@ -29,12 +34,11 @@ public class CommandLineUI {
         System.out.flush();
 
         ui: while (true) {
-            switch (preLoginLoop()) {
-                case REGISTER -> {
-                    registerLoop();
-                }
-                case LOGIN -> {
-                }
+            switch (currentScreen) {
+                case PRE_LOGIN -> currentScreen = preLoginLoop();
+                case REGISTER -> currentScreen = registerLoop();
+                case LOGIN -> {}
+                case LIST_GAMES -> currentScreen = listGamesLoop();
                 case QUIT -> {break ui;}
             }
         }
@@ -53,11 +57,18 @@ public class CommandLineUI {
         }
     }
 
+    private Destination listGamesLoop() {
+        drawLines("games", RowAlign.CENTER);
+        drawScreen();
+        CLIKeyListener.KeyPress keyPress = cliKeyListener.getNextKeyPress();
+        return Destination.QUIT;
+    }
+
     private Destination registerLoop() {
         OptionGrid grid = new OptionGrid(Destination.LOGIN, new Option[][]{{
             new Button("Back", Destination.PRE_LOGIN),
             new TextField("Username"),
-            new TextField("Password"),
+            new TextField("Password", true),
             new TextField("Email"),
             new Button("Submit", Destination.SUBMIT_LOGIN)
         }});
@@ -74,7 +85,23 @@ public class CommandLineUI {
                     case PRE_LOGIN -> {return Destination.PRE_LOGIN;}
                     case SUBMIT_LOGIN -> {
                         // TODO: call game logic and register the user
-                        return Destination.PRE_LOGIN;
+                        String username = grid.getValue(1, 0);
+                        String password = grid.getValue(2, 0);
+                        String email = grid.getValue(3, 0);
+                        switch (clientLogic.register(username, password, email)) {
+                            case OK -> {return Destination.LIST_GAMES;}
+                            case BAD_PASSWORD -> {
+                                drawLines("Password must be at least 8 characters long", RowAlign.BOTTOM);
+                                drawLines(username + password, RowAlign.BOTTOM);
+                            }
+                            case USERNAME_TAKEN -> {
+                                drawLines("Username already taken", RowAlign.BOTTOM);
+                            }
+                            case SERVER_ERROR -> {
+                                drawLines("Unable to connect to server", RowAlign.BOTTOM);
+
+                            }
+                        }
                     }
                     default -> {continue;}
                 }
