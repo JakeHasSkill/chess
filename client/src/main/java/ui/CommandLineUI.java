@@ -28,7 +28,16 @@ public class CommandLineUI {
         System.out.print(ENTER_ALT_SCREEN + ERASE_SCREEN + HIDE_CURSOR + "Chess UI :)");
         System.out.flush();
 
-        preLoginLoop();
+        ui: while (true) {
+            switch (preLoginLoop()) {
+                case REGISTER -> {
+                    registerLoop();
+                }
+                case LOGIN -> {
+                }
+                case QUIT -> {break ui;}
+            }
+        }
 
         revertTerminal();
     }
@@ -41,6 +50,38 @@ public class CommandLineUI {
             terminalWidth = Integer.parseInt(results[1]);
         } catch (IOException | InterruptedException e) {
             System.err.println("Error setting terminal dimensions");
+        }
+    }
+
+    private Screen registerLoop() {
+        OptionGrid grid = new OptionGrid(Screen.LOGIN, new Option[][]{{
+            new Button("Back", Screen.PRE_LOGIN),
+            new TextField("Username"),
+            new TextField("Password"),
+            new TextField("Email"),
+            new Button("Submit", Screen.LIST_GAMES)
+        }});
+        while (true) {
+            drawLines(grid.toString(), RowAlign.CENTER);
+            drawLines("———CHESS———", RowAlign.TOP);
+            drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
+            drawScreen();
+            CLIKeyListener.KeyPress keyPress = cliKeyListener.getNextKeyPress();
+            if (keyPress.key() == CLIKeyListener.Key.UP) {grid.goUp();}
+            else if (keyPress.key() == CLIKeyListener.Key.DOWN) {grid.goDown();}
+            else if (keyPress.key() == CLIKeyListener.Key.ENTER) {
+                switch (grid.select()) {
+                    case PRE_LOGIN -> {return Screen.PRE_LOGIN;}
+                    case LIST_GAMES -> {
+                        // TODO: call game logic and register the user
+                        return Screen.PRE_LOGIN;
+                    }
+                    default -> {continue;}
+                }
+            }
+            else if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {return Screen.PRE_LOGIN;}
+            else if (keyPress.key() == CLIKeyListener.Key.BACKSPACE) {grid.backspace();}
+            else if (keyPress.key() == CLIKeyListener.Key.CHAR) {grid.sendLetter(keyPress.character());}
         }
     }
 
@@ -63,13 +104,17 @@ public class CommandLineUI {
     private PreLoginOptions preLoginLoop() {
         PreLoginOptions highlightedOption = PreLoginOptions.LOGIN;
         while (true) {
+            setDimensions();
             switch (highlightedOption) {
-                case LOGIN -> {drawLine(SET_TEXT_BOLD + "LOGIN" + RESET_ALL_FORMATTING + " | REGISTER | QUIT", RowAlign.CENTER);}
-                case REGISTER -> {drawLine("LOGIN | " + SET_TEXT_BOLD + "REGISTER" + RESET_ALL_FORMATTING + " | QUIT", RowAlign.CENTER);}
-                case QUIT -> {drawLine("LOGIN | REGISTER | " + SET_TEXT_BOLD + "QUIT" + RESET_ALL_FORMATTING, RowAlign.CENTER);}
+                case LOGIN -> {
+                    drawLines(SET_TEXT_BOLD + "LOGIN" + RESET_ALL_FORMATTING + " | REGISTER | QUIT", RowAlign.CENTER);}
+                case REGISTER -> {
+                    drawLines("LOGIN | " + SET_TEXT_BOLD + "REGISTER" + RESET_ALL_FORMATTING + " | QUIT", RowAlign.CENTER);}
+                case QUIT -> {
+                    drawLines("LOGIN | REGISTER | " + SET_TEXT_BOLD + "QUIT" + RESET_ALL_FORMATTING, RowAlign.CENTER);}
             }
-            drawLine("———CHESS———", RowAlign.TOP);
-            drawLine("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
+            drawLines("———CHESS———", RowAlign.TOP);
+            drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
             drawScreen();
             CLIKeyListener.KeyPress keyPress = cliKeyListener.getNextKeyPress();
             if (keyPress.key() == CLIKeyListener.Key.LEFT) {
@@ -88,17 +133,19 @@ public class CommandLineUI {
     }
 
     /**
-     *  Draws the string centered to the middle of the line
+     *  Draws each line in the string centered to the middle of that line
      */
-    private void drawLine(String contents, RowAlign rowAlign) {
-        StringBuilder buffer = screenBufferCenter;
-        switch (rowAlign) {
-            case TOP -> buffer = screenBufferTop;
-            case BOTTOM -> buffer = screenBufferBottom;
+    private void drawLines(String contents, RowAlign rowAlign) {
+        for (String line : contents.lines().toList()) {
+            StringBuilder buffer = screenBufferCenter;
+            switch (rowAlign) {
+                case TOP -> buffer = screenBufferTop;
+                case BOTTOM -> buffer = screenBufferBottom;
+            }
+            buffer.repeat(" ", (terminalWidth - line.replaceAll("\\e\\[[0-9;]*[a-zA-Z]|\\p{Cntrl}", "").length()) / 2);
+            buffer.append(line);
+            buffer.append("\r\n");
         }
-        buffer.repeat(" ", (terminalWidth - contents.replaceAll("\\e\\[[0-9;]*[a-zA-Z]|\\p{Cntrl}", "").length()) / 2);
-        buffer.append(contents);
-        buffer.append("\r\n");
     }
 
     private void drawScreen() {
