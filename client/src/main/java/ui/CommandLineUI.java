@@ -114,13 +114,18 @@ public class CommandLineUI {
      *  Draws each line in the string centered to the middle of that line
      */
     private void drawLines(String contents, RowAlign rowAlign) {
+        int width = 0;
+        for (String line : contents.lines().toList()) {
+            int lineWidth = line.replaceAll("\\e\\[[0-9;]*[a-zA-Z]|\\p{Cntrl}", "").length();
+            if (lineWidth > width) {width = lineWidth;}
+        }
         for (String line : contents.lines().toList()) {
             StringBuilder buffer = screenBufferCenter;
             switch (rowAlign) {
                 case TOP -> buffer = screenBufferTop;
                 case BOTTOM -> buffer = screenBufferBottom;
             }
-            buffer.repeat(" ", (terminalWidth - line.replaceAll("\\e\\[[0-9;]*[a-zA-Z]|\\p{Cntrl}", "").length()) / 2);
+            buffer.repeat(" ", (terminalWidth - width) / 2);
             buffer.append(line);
             buffer.append("\r\n");
         }
