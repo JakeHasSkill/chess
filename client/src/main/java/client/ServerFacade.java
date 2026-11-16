@@ -28,7 +28,6 @@ public class ServerFacade {
     public AuthData register(String username, String password, String email) throws ServerError, UsernameTaken {
         try {
             UserData userData = new UserData(username, password, email);
-
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI(url + "/user"))
                     .timeout(java.time.Duration.ofMillis(1500)) // TODO: increase timeout for a production build
@@ -54,7 +53,30 @@ public class ServerFacade {
     }
 
     public AuthData login(String username, String password) {
-        return null;
+        try {
+            LoginData loginData = new LoginData(username, password);
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(new URI(url + "/session"))
+                    .timeout(java.time.Duration.ofMillis(1500))
+                    .POST(HttpRequest.BodyPublishers.ofString(gson.toJson(loginData)))
+                    .build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                return gson.fromJson(response.body(), AuthData.class);
+            }
+            else if (response.statusCode() == 401) {
+                throw new InvalidCredentials("Incorrect username or password");
+            }
+            else {
+                throw new ServerError("Server Error");
+            }
+        } catch (URISyntaxException e) {
+            throw new ServerError("URL syntax incorrect");
+        } catch (IOException e) {
+            throw new ServerError("Internal Error");
+        } catch (InterruptedException e) {
+            throw new ServerError("Interrupted");
+        }
     }
 
     public void logout(String authToken) {

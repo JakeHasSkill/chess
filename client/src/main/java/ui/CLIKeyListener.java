@@ -5,7 +5,7 @@ import java.io.InputStream;
 
 public class CLIKeyListener{
     public enum Key {
-        UP, DOWN, LEFT, RIGHT, ENTER, ESCAPE, CHAR, BACKSPACE
+        UP, DOWN, LEFT, RIGHT, ENTER, ESCAPE, CHAR, BACKSPACE, TAB
     }
 
     public record KeyPress(Key key, char character) {}
@@ -19,6 +19,7 @@ public class CLIKeyListener{
             while (true) {
                 int b = in.read();
                 if (b == -1) {new KeyPress(Key.ESCAPE, '\0');} // EOF
+                if (b == 9) {new KeyPress(Key.TAB, '\0');}
                 if (b == 127 || b == 8) {return new KeyPress(Key.BACKSPACE, '\0');}
                 if (b == '\r' || b == '\n') {return new KeyPress(Key.ENTER, '\0');}
                 if (b == 27) { // Escape character

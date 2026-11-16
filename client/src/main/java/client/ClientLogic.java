@@ -15,8 +15,21 @@ public class ClientLogic {
         CommandLineUI ui = new CommandLineUI(this);
     }
 
-    public void login(String username, String password) {
+    public enum LoginResult {
+        OK, INCORRECT_CREDENTIALS, SERVER_ERROR
+    }
 
+    public LoginResult login(String username, String password) {
+        try {
+            currentAuthData = serverFacade.login(username, password);
+            return LoginResult.OK;
+        }
+        catch (InvalidCredentials e) {
+            return LoginResult.INCORRECT_CREDENTIALS;
+        }
+        catch (ServerError e) {
+            return LoginResult.SERVER_ERROR;
+        }
     }
 
     public enum RegisterResult {

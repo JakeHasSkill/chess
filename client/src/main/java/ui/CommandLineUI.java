@@ -37,7 +37,7 @@ public class CommandLineUI {
             switch (currentScreen) {
                 case PRE_LOGIN -> currentScreen = preLoginLoop();
                 case REGISTER -> currentScreen = registerLoop();
-                case LOGIN -> {}
+                case LOGIN -> currentScreen = loginLoop();
                 case LIST_GAMES -> currentScreen = listGamesLoop();
                 case QUIT -> {break ui;}
             }
@@ -64,51 +64,72 @@ public class CommandLineUI {
         return Destination.QUIT;
     }
 
-    private Destination registerLoop() {
+    private Destination loginLoop() {
         OptionGrid grid = new OptionGrid(Destination.LOGIN, new Option[][]{{
-            new Button("Back", Destination.PRE_LOGIN),
             new TextField("Username"),
             new TextField("Password", true),
-            new TextField("Email"),
-            new Button("Submit", Destination.SUBMIT_LOGIN)
+            new Button("Submit", Destination.SUBMIT_LOGIN),
+            new Button("Back", Destination.PRE_LOGIN)
         }});
         while (true) {
             drawLines(grid.toString(), RowAlign.CENTER);
             drawLines("———CHESS———", RowAlign.TOP);
             drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
             drawScreen();
-            CLIKeyListener.KeyPress keyPress = cliKeyListener.getNextKeyPress();
-            if (keyPress.key() == CLIKeyListener.Key.UP) {grid.goUp();}
-            else if (keyPress.key() == CLIKeyListener.Key.DOWN) {grid.goDown();}
-            else if (keyPress.key() == CLIKeyListener.Key.ENTER) {
-                switch (grid.select()) {
-                    case PRE_LOGIN -> {return Destination.PRE_LOGIN;}
-                    case SUBMIT_LOGIN -> {
-                        // TODO: call game logic and register the user
-                        String username = grid.getValue(1, 0);
-                        String password = grid.getValue(2, 0);
-                        String email = grid.getValue(3, 0);
-                        switch (clientLogic.register(username, password, email)) {
-                            case OK -> {return Destination.LIST_GAMES;}
-                            case BAD_PASSWORD -> {
-                                drawLines("Password must be at least 8 characters long", RowAlign.BOTTOM);
-                                drawLines(username + password, RowAlign.BOTTOM);
-                            }
-                            case USERNAME_TAKEN -> {
-                                drawLines("Username already taken", RowAlign.BOTTOM);
-                            }
-                            case SERVER_ERROR -> {
-                                drawLines("Unable to connect to server", RowAlign.BOTTOM);
-
-                            }
+            switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+                case SUBMIT_LOGIN -> {
+                    String username = grid.getValue(0, 0);
+                    String password = grid.getValue(1, 0);
+                    switch (clientLogic.login(username, password)) {
+                        case OK -> {return Destination.LIST_GAMES;}
+                        case INCORRECT_CREDENTIALS -> {
+                            drawLines("Incorrect username or password", RowAlign.BOTTOM);
+                        }
+                        case SERVER_ERROR -> {
+                            drawLines("Unable to connect to server", RowAlign.BOTTOM);
                         }
                     }
-                    default -> {continue;}
                 }
+                case PRE_LOGIN -> {return Destination.PRE_LOGIN;}
+                case LOGIN -> {continue;}
             }
-            else if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {return Destination.PRE_LOGIN;}
-            else if (keyPress.key() == CLIKeyListener.Key.BACKSPACE) {grid.backspace();}
-            else if (keyPress.key() == CLIKeyListener.Key.CHAR) {grid.sendLetter(keyPress.character());}
+        }
+    }
+
+    private Destination registerLoop() {
+        OptionGrid grid = new OptionGrid(Destination.REGISTER, new Option[][]{{
+            new TextField("Username"),
+            new TextField("Password", true),
+            new TextField("Email"),
+            new Button("Submit", Destination.SUBMIT_REGISTER),
+            new Button("Back", Destination.PRE_LOGIN)
+        }});
+        while (true) {
+            drawLines(grid.toString(), RowAlign.CENTER);
+            drawLines("———CHESS———", RowAlign.TOP);
+            drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
+            drawScreen();
+            switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+                case PRE_LOGIN -> {return Destination.PRE_LOGIN;}
+                case SUBMIT_REGISTER -> {
+                    String username = grid.getValue(0, 0);
+                    String password = grid.getValue(1, 0);
+                    String email = grid.getValue(2, 0);
+                    switch (clientLogic.register(username, password, email)) {
+                        case OK -> {return Destination.LIST_GAMES;}
+                        case BAD_PASSWORD -> {
+                            drawLines("Password must be at least 8 characters long", RowAlign.BOTTOM);
+                        }
+                        case USERNAME_TAKEN -> {
+                            drawLines("Username already taken", RowAlign.BOTTOM);
+                        }
+                        case SERVER_ERROR -> {
+                            drawLines("Unable to connect to server", RowAlign.BOTTOM);
+                        }
+                    }
+                }
+                case REGISTER -> {continue;}
+            }
         }
     }
 
@@ -123,17 +144,12 @@ public class CommandLineUI {
             drawLines("———CHESS———", RowAlign.TOP);
             drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
             drawScreen();
-            CLIKeyListener.KeyPress keyPress = cliKeyListener.getNextKeyPress();
-            if (keyPress.key() == CLIKeyListener.Key.UP) {grid.goUp();}
-            else if (keyPress.key() == CLIKeyListener.Key.DOWN) {grid.goDown();}
-            else if (keyPress.key() == CLIKeyListener.Key.ENTER) {
-                switch (grid.select()) {
-                    case LOGIN -> {return Destination.LOGIN;}
-                    case REGISTER -> {return Destination.REGISTER;}
-                    case QUIT -> {return Destination.QUIT;}
-                }
+            switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+                case LOGIN -> {return Destination.LOGIN;}
+                case REGISTER -> {return Destination.REGISTER;}
+                case QUIT -> {return Destination.QUIT;}
+                case PRE_LOGIN -> {continue;}
             }
-            else if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {return Destination.QUIT;}
         }
     }
 

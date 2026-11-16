@@ -17,30 +17,39 @@ public class OptionGrid {
         selectedColumn = col;
     }
 
-    public void goUp() {
+    private void goUp() {
         if (selectedRow == 0) {return;}
         selectedRow--;
     }
 
-    public void goDown() {
+    private void goDown() {
         if (selectedRow == options[0].length - 1) {return;}
         selectedRow++;
     }
 
-    public void goLeft() {
+    private void goLeft() {
         if (selectedColumn == 0) {return;}
         selectedColumn--;
     }
 
-    public void goRight() {
+    private void goRight() {
         if (selectedColumn == options.length - 1) {return;}
         selectedColumn++;
     }
 
-    public Destination select() {
-        if (options[selectedColumn][selectedRow].getClass() == Button.class) {
-            return ((Button) options[selectedColumn][selectedRow]).getDestination();
+    public Destination sendKeyPress(CLIKeyListener.KeyPress keyPress) {
+        if (keyPress.key() == CLIKeyListener.Key.UP) {goUp();}
+        else if (keyPress.key() == CLIKeyListener.Key.DOWN || keyPress.key() == CLIKeyListener.Key.TAB) {
+            goDown();
         }
+        else if (keyPress.key() == CLIKeyListener.Key.ENTER) {
+            if (options[selectedColumn][selectedRow].getClass() == Button.class) {
+                return ((Button) options[selectedColumn][selectedRow]).getDestination();
+            }
+        }
+        else if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {return Destination.PRE_LOGIN;}
+        else if (keyPress.key() == CLIKeyListener.Key.BACKSPACE) {backspace();}
+        else if (keyPress.key() == CLIKeyListener.Key.CHAR) {sendLetter(keyPress.character());}
         return currentScreen;
     }
 
