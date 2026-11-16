@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-cd "/home/jacob/Schoolwork/CS 240/chess" || exit 1
 
 nohup ptyxis -- java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=*:5005 \
   -cp "client/target/classes:client/build/classes/java/main:out/production/client" \
