@@ -4,9 +4,9 @@ import static ui.EscapeSequences.*;
 
 public class Button extends Option{
     private final String text;
-    private final Screen destination;
+    private final Destination destination;
 
-    public Button(String text, Screen destination) {
+    public Button(String text, Destination destination) {
         this.text = text;
         this.destination = destination;
     }
@@ -21,7 +21,7 @@ public class Button extends Option{
         return SET_TEXT_BOLD + text + RESET_ALL_FORMATTING;
     }
 
-    public Screen getDestination() {
+    public Destination getDestination() {
         return destination;
     }
 }

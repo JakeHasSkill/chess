@@ -53,13 +53,13 @@ public class CommandLineUI {
         }
     }
 
-    private Screen registerLoop() {
-        OptionGrid grid = new OptionGrid(Screen.LOGIN, new Option[][]{{
-            new Button("Back", Screen.PRE_LOGIN),
+    private Destination registerLoop() {
+        OptionGrid grid = new OptionGrid(Destination.LOGIN, new Option[][]{{
+            new Button("Back", Destination.PRE_LOGIN),
             new TextField("Username"),
             new TextField("Password"),
             new TextField("Email"),
-            new Button("Submit", Screen.LIST_GAMES)
+            new Button("Submit", Destination.SUBMIT_LOGIN)
         }});
         while (true) {
             drawLines(grid.toString(), RowAlign.CENTER);
@@ -71,64 +71,42 @@ public class CommandLineUI {
             else if (keyPress.key() == CLIKeyListener.Key.DOWN) {grid.goDown();}
             else if (keyPress.key() == CLIKeyListener.Key.ENTER) {
                 switch (grid.select()) {
-                    case PRE_LOGIN -> {return Screen.PRE_LOGIN;}
-                    case LIST_GAMES -> {
+                    case PRE_LOGIN -> {return Destination.PRE_LOGIN;}
+                    case SUBMIT_LOGIN -> {
                         // TODO: call game logic and register the user
-                        return Screen.PRE_LOGIN;
+                        return Destination.PRE_LOGIN;
                     }
                     default -> {continue;}
                 }
             }
-            else if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {return Screen.PRE_LOGIN;}
+            else if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {return Destination.PRE_LOGIN;}
             else if (keyPress.key() == CLIKeyListener.Key.BACKSPACE) {grid.backspace();}
             else if (keyPress.key() == CLIKeyListener.Key.CHAR) {grid.sendLetter(keyPress.character());}
         }
     }
 
-    enum PreLoginOptions {
-        LOGIN, REGISTER, QUIT;
-        static PreLoginOptions goLeft(PreLoginOptions selected) {
-            switch (selected) {
-                case QUIT -> {return REGISTER;}
-                default -> {return LOGIN;}
-            }
-        }
-        static PreLoginOptions goRight(PreLoginOptions selected) {
-            switch (selected) {
-                case LOGIN -> {return REGISTER;}
-                default -> {return QUIT;}
-            }
-        }
-    }
-
-    private PreLoginOptions preLoginLoop() {
-        PreLoginOptions highlightedOption = PreLoginOptions.LOGIN;
+    private Destination preLoginLoop() {
+        OptionGrid grid = new OptionGrid(Destination.PRE_LOGIN, new Option[][]{{
+            new Button("Login", Destination.LOGIN),
+            new Button("Register", Destination.REGISTER),
+            new Button("Quit", Destination.QUIT)
+        }});
         while (true) {
-            setDimensions();
-            switch (highlightedOption) {
-                case LOGIN -> {
-                    drawLines(SET_TEXT_BOLD + "LOGIN" + RESET_ALL_FORMATTING + " | REGISTER | QUIT", RowAlign.CENTER);}
-                case REGISTER -> {
-                    drawLines("LOGIN | " + SET_TEXT_BOLD + "REGISTER" + RESET_ALL_FORMATTING + " | QUIT", RowAlign.CENTER);}
-                case QUIT -> {
-                    drawLines("LOGIN | REGISTER | " + SET_TEXT_BOLD + "QUIT" + RESET_ALL_FORMATTING, RowAlign.CENTER);}
-            }
+            drawLines(grid.toString(), RowAlign.CENTER);
             drawLines("———CHESS———", RowAlign.TOP);
             drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
             drawScreen();
             CLIKeyListener.KeyPress keyPress = cliKeyListener.getNextKeyPress();
-            if (keyPress.key() == CLIKeyListener.Key.LEFT) {
-                highlightedOption = PreLoginOptions.goLeft(highlightedOption);
-            }
-            else if (keyPress.key() == CLIKeyListener.Key.RIGHT) {
-                highlightedOption = PreLoginOptions.goRight(highlightedOption);
-            }
+            if (keyPress.key() == CLIKeyListener.Key.UP) {grid.goUp();}
+            else if (keyPress.key() == CLIKeyListener.Key.DOWN) {grid.goDown();}
             else if (keyPress.key() == CLIKeyListener.Key.ENTER) {
-                return highlightedOption;
+                switch (grid.select()) {
+                    case LOGIN -> {return Destination.LOGIN;}
+                    case REGISTER -> {return Destination.REGISTER;}
+                    case QUIT -> {return Destination.QUIT;}
+                }
             }
-            else if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {
-                return PreLoginOptions.QUIT;
-            }
+            else if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {return Destination.QUIT;}
         }
     }
 

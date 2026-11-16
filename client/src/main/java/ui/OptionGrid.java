@@ -3,13 +3,13 @@ package ui;
 public class OptionGrid {
     private final Option[][] options;
     private int selectedRow, selectedColumn;
-    private final Screen screen;
+    private final Destination currentScreen;
 
-    public OptionGrid(Screen screen, Option[][] gridOptions) {
+    public OptionGrid(Destination currentScreen, Option[][] gridOptions) {
         this.options = gridOptions;
         selectedRow = 0;
         selectedColumn = 0;
-        this.screen = screen;
+        this.currentScreen = currentScreen;
     }
 
     public void setSelectedElement(int row, int col) {
@@ -37,11 +37,11 @@ public class OptionGrid {
         selectedColumn++;
     }
 
-    public Screen select() {
+    public Destination select() {
         if (options[selectedColumn][selectedRow].getClass() == Button.class) {
             return ((Button) options[selectedColumn][selectedRow]).getDestination();
         }
-        return screen;
+        return currentScreen;
     }
 
     public void backspace() {
