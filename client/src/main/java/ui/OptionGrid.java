@@ -74,6 +74,13 @@ public class OptionGrid {
 
     @Override
     public String toString() {
+        int[] columnWidths = new int[options.length];
+        for (int row = 0; row < options[0].length; row++) {
+            for (int col = 0; col < options.length; col++) {
+                int width = options[col][row].toString().replaceAll("\\e\\[[0-9;]*[a-zA-Z]|\\p{Cntrl}", "").length();
+                if (width > columnWidths[col]) {columnWidths[col] = width;}
+            }
+        }
         StringBuilder output = new StringBuilder();
         for (int row = 0; row < options[0].length; row++) {
             for (int col = 0; col < options.length; col++) {
@@ -81,6 +88,8 @@ public class OptionGrid {
                     output.append(options[col][row].toStringHighlighted());
                 }
                 else {output.append(options[col][row]);}
+                int width = options[col][row].toString().replaceAll("\\e\\[[0-9;]*[a-zA-Z]|\\p{Cntrl}", "").length();
+                output.repeat(" ", columnWidths[col] - width);
             }
             output.append("\r\n");
         }
