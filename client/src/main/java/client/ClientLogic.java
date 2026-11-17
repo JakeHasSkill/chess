@@ -10,9 +10,11 @@ public class ClientLogic {
     private ServerFacade serverFacade;
     private AuthData currentAuthData;
     private GameData currentGame;
+    private ArrayList<GameData> gameList;
     public ClientLogic() {
         this.serverFacade = new ServerFacade("http://localhost:8080");
         CommandLineUI ui = new CommandLineUI(this);
+        gameList = new ArrayList<>();
     }
 
     public enum LoginResult {
@@ -20,16 +22,10 @@ public class ClientLogic {
     }
 
     public LoginResult login(String username, String password) {
-        try {
-            currentAuthData = serverFacade.login(username, password);
-            return LoginResult.OK;
-        }
-        catch (InvalidCredentials e) {
-            return LoginResult.INCORRECT_CREDENTIALS;
-        }
-        catch (ServerError e) {
-            return LoginResult.SERVER_ERROR;
-        }
+        try {currentAuthData = serverFacade.login(username, password);}
+        catch (InvalidCredentials e) {return LoginResult.INCORRECT_CREDENTIALS;}
+        catch (ServerError e) {return LoginResult.SERVER_ERROR;}
+        return LoginResult.OK;
     }
 
     public enum RegisterResult {
@@ -38,26 +34,41 @@ public class ClientLogic {
 
     public RegisterResult register(String username, String password, String email) {
         if (password.length() < 8) {return RegisterResult.BAD_PASSWORD;}
-        try {
-            currentAuthData = serverFacade.register(username, password, email);
-            return RegisterResult.OK;
-        }
-        catch (ServerError e) {
-            return RegisterResult.SERVER_ERROR;
-        }
+        try {currentAuthData = serverFacade.register(username, password, email);}
+        catch (ServerError e) {return RegisterResult.SERVER_ERROR;}
         catch (UsernameTaken e) {return RegisterResult.USERNAME_TAKEN;}
+        return RegisterResult.OK;
     }
 
-    public void logout() {
+    public enum LogoutResult {
+        OK, SERVER_ERROR, NOT_LOGGED_IN
+    }
 
+    public LogoutResult logout() {
+        try {serverFacade.logout(currentAuthData.authToken());}
+        catch (NotLoggedIn e) {return LogoutResult.NOT_LOGGED_IN;}
+        catch (ServerError e) {return LogoutResult.SERVER_ERROR;}
+        this.currentAuthData = null;
+        return LogoutResult.OK;
     }
 
     public boolean createGame(String name) {
         return false;
     }
 
-    public ArrayList<GameData> listGames() {
-        return null;
+    public enum ListGamesResult {
+        OK, NOT_LOGGED_IN, SERVER_ERROR
+    }
+
+    public ListGamesResult requestGames() {
+        try {gameList = serverFacade.listGames(currentAuthData.authToken());}
+        catch (NotLoggedIn e) {return ListGamesResult.NOT_LOGGED_IN;}
+        catch (ServerError e) {return ListGamesResult.SERVER_ERROR;}
+        return ListGamesResult.OK;
+    }
+
+    public ArrayList<GameData> getGames() {
+        return gameList;
     }
 
     public void joinGame(int gameID, ChessGame.TeamColor color) {

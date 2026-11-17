@@ -1,8 +1,12 @@
 package ui;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.stream.Stream;
 
 import client.ClientLogic;
+import model.GameData;
+
 import static ui.EscapeSequences.*;
 
 public class CommandLineUI {
@@ -58,10 +62,35 @@ public class CommandLineUI {
     }
 
     private Destination listGamesLoop() {
-        drawLines("games", RowAlign.CENTER);
-        drawScreen();
-        CLIKeyListener.KeyPress keyPress = cliKeyListener.getNextKeyPress();
-        return Destination.QUIT;
+        ArrayList<GameData> gameData = new ArrayList<>();
+        switch (clientLogic.requestGames()) {
+            case OK -> gameData = clientLogic.getGames();
+            case NOT_LOGGED_IN -> {return Destination.PRE_LOGIN;}
+            case SERVER_ERROR -> drawLines("Server Error; Unable to list games.", RowAlign.BOTTOM);
+        }
+        OptionGrid grid = new OptionGrid(Destination.LIST_GAMES, new Option[][]{Stream.of(
+            Stream.of(new Button("Create New Game", Destination.CREATE_GAME)),
+            gameData.stream().map(game -> new Button("Join Game: " + game.gameName(), Destination.JOIN_GAME)),
+            Stream.of(new Button("Logout", Destination.LOGOUT))
+        ).flatMap(s -> s).toArray(Option[]::new)});
+        while (true) {
+            setDimensions();
+            drawLines(grid.toString(), RowAlign.CENTER);
+            drawLines("———CHESS———", RowAlign.TOP);
+            drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
+            drawScreen();
+            switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+                case CREATE_GAME -> {return Destination.CREATE_GAME;}
+                case LOGOUT -> {
+                    switch (clientLogic.logout()) {
+                        case OK -> {return Destination.PRE_LOGIN;}
+                        case SERVER_ERROR -> {drawLines("Unable to connect to server", RowAlign.BOTTOM);}
+                    }
+                }
+                case JOIN_GAME -> {return Destination.JOIN_GAME;}
+                case LIST_GAMES -> {continue;}
+            }
+        }
     }
 
     private Destination loginLoop() {
@@ -72,6 +101,7 @@ public class CommandLineUI {
             new Button("Back", Destination.PRE_LOGIN)
         }});
         while (true) {
+            setDimensions();
             drawLines(grid.toString(), RowAlign.CENTER);
             drawLines("———CHESS———", RowAlign.TOP);
             drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
@@ -105,6 +135,7 @@ public class CommandLineUI {
             new Button("Back", Destination.PRE_LOGIN)
         }});
         while (true) {
+            setDimensions();
             drawLines(grid.toString(), RowAlign.CENTER);
             drawLines("———CHESS———", RowAlign.TOP);
             drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
@@ -140,6 +171,7 @@ public class CommandLineUI {
             new Button("Quit", Destination.QUIT)
         }});
         while (true) {
+            setDimensions();
             drawLines(grid.toString(), RowAlign.CENTER);
             drawLines("———CHESS———", RowAlign.TOP);
             drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
