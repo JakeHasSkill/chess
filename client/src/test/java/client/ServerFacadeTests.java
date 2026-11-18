@@ -7,6 +7,7 @@ import model.JoinData;
 import org.junit.jupiter.api.*;
 import server.Server;
 
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 
@@ -14,11 +15,12 @@ public class ServerFacadeTests {
     private static Server server;
     private static ServerFacade serverFacade;
     private static AuthData auth1;
+    private static int port;
 
     @BeforeAll
     public static void init() {
         server = new Server();
-        int port = server.run(0);
+        port = server.run(0);
         serverFacade = new ServerFacade("http://localhost:" + port);
         serverFacade.clearDatabase();
         System.out.println("Started test HTTP server on " + port);
@@ -27,6 +29,12 @@ public class ServerFacadeTests {
     @BeforeEach
     public void reset() {
         serverFacade.clearDatabase();
+    }
+
+    @Test
+    public void wrongPort() {
+        ServerFacade server = new ServerFacade("http://localhost:" + (port + 1));
+        Assertions.assertThrows(ServerError.class, () -> server.register("user", "password", "email"));
     }
 
     @Test
