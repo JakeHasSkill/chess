@@ -99,11 +99,18 @@ public class ServerFacade {
         else {throw new ServerError("Server Error");}
     }
 
-    public void createGame(String authToken, GameData game) {
-
+    public void createGame(String authToken, GameData game) throws NotLoggedIn, ServerError {
+        HttpResponse<String> response = makeHttpRequest("/game", gson.toJson(game), authToken, HttpMethod.POST);
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {return;}
+        else if (response.statusCode() == 401) {throw new NotLoggedIn("Invalid AuthToken");}
+        else {throw new ServerError("Server Error");}
     }
 
-    public void joinGame(String authToken, LoginData loginData) {
-
+    public void joinGame(String authToken, JoinData joinData) throws TeamColorTaken, NotLoggedIn, ServerError {
+        HttpResponse<String> response = makeHttpRequest("/game", gson.toJson(joinData), authToken, HttpMethod.PUT);
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {return;}
+        else if (response.statusCode() == 403) {throw new TeamColorTaken("Team not available");}
+        else if (response.statusCode() == 401) {throw new NotLoggedIn("Invalid AuthToken");}
+        else {throw new ServerError("Server Error");}
     }
 }

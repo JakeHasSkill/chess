@@ -69,8 +69,11 @@ public class OptionGrid {
         if (options[col][row].getClass() == TextField.class) {
             return ((TextField) options[col][row]).getValue();
         }
-        return "";
+        return options[col][row].toString();
     }
+
+    public int getSelectedRow() {return selectedRow;}
+    public int getSelectedColumn() {return selectedColumn;}
 
     @Override
     public String toString() {

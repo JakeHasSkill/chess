@@ -10,6 +10,7 @@ public class ClientLogic {
     private ServerFacade serverFacade;
     private AuthData currentAuthData;
     private GameData currentGame;
+    private ChessGame.TeamColor myColor;
     private ArrayList<GameData> gameList;
     public ClientLogic() {
         this.serverFacade = new ServerFacade("http://localhost:8080");
@@ -52,8 +53,15 @@ public class ClientLogic {
         return LogoutResult.OK;
     }
 
-    public boolean createGame(String name) {
-        return false;
+    public enum CreateGameResult {
+        OK, NOT_LOGGED_IN, SERVER_ERROR
+    }
+
+    public CreateGameResult createGame(String name) {
+        try {serverFacade.createGame(currentAuthData.authToken(), new GameData(0, null, null, name, new ChessGame()));}
+        catch (NotLoggedIn e) {return CreateGameResult.NOT_LOGGED_IN;}
+        catch (ServerError e) {return CreateGameResult.SERVER_ERROR;}
+        return CreateGameResult.OK;
     }
 
     public enum ListGamesResult {
@@ -71,8 +79,30 @@ public class ClientLogic {
         return gameList;
     }
 
-    public void joinGame(int gameID, ChessGame.TeamColor color) {
+    public GameData getGameData(String gameName) {
+        for (GameData game : gameList) {
+            if (gameName.equals(game.gameName())) {
+                return game;
+            }
+        }
+        return null;
+    }
 
+    public enum JoinGameResult {
+        OK, TEAM_COLOR_TAKEN, SERVER_ERROR, NOT_LOGGED_IN
+    }
+
+    public JoinGameResult joinGame(int gameID, ChessGame.TeamColor color) {
+        try {serverFacade.joinGame(currentAuthData.authToken(), new JoinData(color, gameID));}
+        catch (TeamColorTaken e) {return JoinGameResult.TEAM_COLOR_TAKEN;}
+        catch (ServerError e) {return JoinGameResult.SERVER_ERROR;}
+        catch (NotLoggedIn e) {return JoinGameResult.NOT_LOGGED_IN;}
+        myColor = color;
+        return JoinGameResult.OK;
+    }
+
+    public ChessGame.TeamColor getMyColor() {
+        return myColor;
     }
 
     public void observeGame(int gameID) {

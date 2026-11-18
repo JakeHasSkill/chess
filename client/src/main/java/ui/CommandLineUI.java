@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
+import chess.ChessGame;
 import client.ClientLogic;
 import model.GameData;
 
@@ -16,6 +17,7 @@ public class CommandLineUI {
     private StringBuilder screenBufferCenter, screenBufferTop, screenBufferBottom;
     private enum RowAlign {TOP, CENTER, BOTTOM}
     private Destination currentScreen;
+    private GameData gameToJoin;
 
     public CommandLineUI(ClientLogic clientLogic) {
         this.clientLogic = clientLogic;
@@ -43,6 +45,10 @@ public class CommandLineUI {
                 case REGISTER -> currentScreen = registerLoop();
                 case LOGIN -> currentScreen = loginLoop();
                 case LIST_GAMES -> currentScreen = listGamesLoop();
+                case CREATE_GAME -> currentScreen = createGameLoop();
+                case JOIN_GAME -> currentScreen = joinGameLoop();
+//                case IN_GAME -> currentScreen = inGameLoop();
+//                case IN_GAME_OBSERVE -> currentScreen = observeGameLoop();
                 case QUIT -> {break ui;}
             }
         }
@@ -61,6 +67,68 @@ public class CommandLineUI {
         }
     }
 
+    private Destination joinGameLoop() {
+        ArrayList<Option> options = new ArrayList<>();
+        if (gameToJoin.blackUsername() == null) {
+            options.add(new Button("Join as Black team", Destination.IN_GAME));
+        }
+        if (gameToJoin.whiteUsername() == null) {
+            options.add(new Button("Join as White team", Destination.IN_GAME));
+        }
+        options.add(new Button("Join as observer", Destination.JOIN_GAME));
+        options.add(new Button("Back", Destination.LIST_GAMES));
+        OptionGrid grid = new OptionGrid(Destination.CREATE_GAME, new Option[][]{Stream.of(
+            options.stream()
+        ).flatMap(s -> s).toArray(Option[]::new)});
+        while (true) {
+            drawMenu(grid);
+            switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+                case IN_GAME -> {
+                    if (clientLogic.getMyColor() == ChessGame.TeamColor.BLACK) {
+                        clientLogic.joinGame(gameToJoin.gameID(), ChessGame.TeamColor.BLACK);
+                    } else {clientLogic.joinGame(gameToJoin.gameID(), ChessGame.TeamColor.WHITE);}
+                    return Destination.IN_GAME;
+                }
+                case IN_GAME_OBSERVE -> {
+                    clientLogic.observeGame(gameToJoin.gameID());
+                    return Destination.IN_GAME_OBSERVE;
+                }
+                case LIST_GAMES -> {return Destination.LIST_GAMES;}
+                case CREATE_GAME -> {continue;}
+            }
+        }
+    }
+
+    private Destination createGameLoop() {
+        OptionGrid grid = new OptionGrid(Destination.CREATE_GAME, new Option[][]{{
+            new TextField("Game name"),
+            new Button("Create Game", Destination.SUBMIT_CREATE_GAME),
+            new Button("Back", Destination.LIST_GAMES)
+        }});
+        while (true) {
+            drawMenu(grid);
+            switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+                case SUBMIT_CREATE_GAME -> {
+                    String gameName = grid.getValue(0, 0);
+                    switch (clientLogic.createGame(gameName)) {
+                        case NOT_LOGGED_IN -> {
+                            drawLines("Not logged in", RowAlign.BOTTOM);
+                            return Destination.PRE_LOGIN;
+                        }
+                        case SERVER_ERROR -> drawLines("Unable to connect to server", RowAlign.BOTTOM);
+                        case OK -> {}
+                    }
+                    clientLogic.requestGames();
+                    gameToJoin = clientLogic.getGameData(gameName);
+                    if (gameToJoin == null) {return Destination.LIST_GAMES;}
+                    return Destination.JOIN_GAME;
+                }
+                case LIST_GAMES -> {return Destination.LIST_GAMES;}
+                case CREATE_GAME -> {continue;}
+            }
+        }
+    }
+
     private Destination listGamesLoop() {
         ArrayList<GameData> gameData = new ArrayList<>();
         switch (clientLogic.requestGames()) {
@@ -69,16 +137,13 @@ public class CommandLineUI {
             case SERVER_ERROR -> drawLines("Server Error; Unable to list games.", RowAlign.BOTTOM);
         }
         OptionGrid grid = new OptionGrid(Destination.LIST_GAMES, new Option[][]{Stream.of(
-            Stream.of(new Button("Create New Game", Destination.CREATE_GAME)),
-            gameData.stream().map(game -> new Button("Join Game: " + game.gameName(), Destination.JOIN_GAME)),
+            Stream.of(new Button("Create New Game", Destination.CREATE_GAME),
+            new Button("Join Game:", Destination.LIST_GAMES)),
+            gameData.stream().map(game -> new Button(game.gameName(), Destination.JOIN_GAME)),
             Stream.of(new Button("Logout", Destination.LOGOUT))
         ).flatMap(s -> s).toArray(Option[]::new)});
         while (true) {
-            setDimensions();
-            drawLines(grid.toString(), RowAlign.CENTER);
-            drawLines("———CHESS———", RowAlign.TOP);
-            drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
-            drawScreen();
+            drawMenu(grid);
             switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
                 case CREATE_GAME -> {return Destination.CREATE_GAME;}
                 case LOGOUT -> {
@@ -87,7 +152,11 @@ public class CommandLineUI {
                         case SERVER_ERROR -> {drawLines("Unable to connect to server", RowAlign.BOTTOM);}
                     }
                 }
-                case JOIN_GAME -> {return Destination.JOIN_GAME;}
+                case JOIN_GAME -> {
+                    gameToJoin = clientLogic.getGameData(grid.getValue(grid.getSelectedRow(), grid.getSelectedColumn()));
+                    if (gameToJoin == null) {return Destination.LIST_GAMES;}
+                    return Destination.JOIN_GAME;
+                }
                 case LIST_GAMES -> {continue;}
             }
         }
@@ -101,11 +170,7 @@ public class CommandLineUI {
             new Button("Back", Destination.PRE_LOGIN)
         }});
         while (true) {
-            setDimensions();
-            drawLines(grid.toString(), RowAlign.CENTER);
-            drawLines("———CHESS———", RowAlign.TOP);
-            drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
-            drawScreen();
+            drawMenu(grid);
             switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
                 case SUBMIT_LOGIN -> {
                     String username = grid.getValue(0, 0);
@@ -135,11 +200,7 @@ public class CommandLineUI {
             new Button("Back", Destination.PRE_LOGIN)
         }});
         while (true) {
-            setDimensions();
-            drawLines(grid.toString(), RowAlign.CENTER);
-            drawLines("———CHESS———", RowAlign.TOP);
-            drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
-            drawScreen();
+            drawMenu(grid);
             switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
                 case PRE_LOGIN -> {return Destination.PRE_LOGIN;}
                 case SUBMIT_REGISTER -> {
@@ -171,11 +232,7 @@ public class CommandLineUI {
             new Button("Quit", Destination.QUIT)
         }});
         while (true) {
-            setDimensions();
-            drawLines(grid.toString(), RowAlign.CENTER);
-            drawLines("———CHESS———", RowAlign.TOP);
-            drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
-            drawScreen();
+            drawMenu(grid);
             switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
                 case LOGIN -> {return Destination.LOGIN;}
                 case REGISTER -> {return Destination.REGISTER;}
@@ -183,6 +240,14 @@ public class CommandLineUI {
                 case PRE_LOGIN -> {continue;}
             }
         }
+    }
+
+    private void drawMenu(OptionGrid grid) {
+        setDimensions();
+        drawLines(grid.toString(), RowAlign.CENTER);
+        drawLines("———CHESS———", RowAlign.TOP);
+        drawLines("Arrow keys to navigate; Enter to select", RowAlign.BOTTOM);
+        drawScreen();
     }
 
     /**
