@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
-import chess.ChessGame;
+import chess.*;
 import client.ClientLogic;
 import model.GameData;
 
@@ -93,12 +93,16 @@ public class CommandLineUI {
         ArrayList<Option> options = new ArrayList<>();
         if (gameToJoin.blackUsername() == null) {
             options.add(new Button("Join as Black team", Destination.IN_GAME));
+        } else {
+            options.add(new Button("Player " + gameToJoin.blackUsername() + " is on the Black team", Destination.JOIN_GAME));
         }
         if (gameToJoin.whiteUsername() == null) {
             options.add(new Button("Join as White team", Destination.IN_GAME));
+        } else {
+            options.add(new Button("Player " + gameToJoin.whiteUsername() + " is on the White team", Destination.JOIN_GAME));
         }
         options.add(new Button("Join as observer", Destination.IN_GAME_OBSERVE));
-        options.add(new Button("Back", Destination.LIST_GAMES));
+        options.add(new Button("Back", Destination.BACK));
         OptionGrid grid = new OptionGrid(Destination.JOIN_GAME, new Option[][]{Stream.of(
             options.stream()
         ).flatMap(s -> s).toArray(Option[]::new)});
@@ -106,16 +110,26 @@ public class CommandLineUI {
             drawMenu(grid);
             switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
                 case IN_GAME -> {
+                    ChessGame.TeamColor color;
                     if (grid.getValue(grid.getSelectedRow(), grid.getSelectedColumn()).equals("Join as Black team")) {
-                        clientLogic.joinGame(gameToJoin.gameID(), ChessGame.TeamColor.BLACK);
-                    } else {clientLogic.joinGame(gameToJoin.gameID(), ChessGame.TeamColor.WHITE);}
-                    return Destination.IN_GAME;
+                        color = ChessGame.TeamColor.BLACK;
+                    } else {color = ChessGame.TeamColor.WHITE;}
+                    switch (clientLogic.joinGame(gameToJoin.gameID(), color)) {
+                        case NOT_LOGGED_IN -> {return Destination.PRE_LOGIN;}
+                        case TEAM_COLOR_TAKEN -> {
+                            clientLogic.requestGames();
+                            gameToJoin = clientLogic.getGameData(gameToJoin.gameID());
+                            return Destination.JOIN_GAME;
+                        }
+                        case SERVER_ERROR -> {drawLines("Unable to connect to server", RowAlign.BOTTOM);}
+                        case OK -> {return Destination.IN_GAME;}
+                    }
                 }
                 case IN_GAME_OBSERVE -> {
                     clientLogic.observeGame(gameToJoin.gameID());
                     return Destination.IN_GAME_OBSERVE;
                 }
-                case LIST_GAMES -> {return Destination.LIST_GAMES;}
+                case BACK -> {return Destination.LIST_GAMES;}
                 case JOIN_GAME -> {continue;}
             }
         }
@@ -125,7 +139,7 @@ public class CommandLineUI {
         OptionGrid grid = new OptionGrid(Destination.CREATE_GAME, new Option[][]{{
             new TextField("Game name"),
             new Button("Create Game", Destination.SUBMIT_CREATE_GAME),
-            new Button("Back", Destination.LIST_GAMES)
+            new Button("Back", Destination.BACK)
         }});
         while (true) {
             drawMenu(grid);
@@ -145,7 +159,7 @@ public class CommandLineUI {
                     if (gameToJoin == null) {return Destination.LIST_GAMES;}
                     return Destination.JOIN_GAME;
                 }
-                case LIST_GAMES -> {return Destination.LIST_GAMES;}
+                case BACK -> {return Destination.LIST_GAMES;}
                 case CREATE_GAME -> {continue;}
             }
         }
@@ -162,13 +176,13 @@ public class CommandLineUI {
             Stream.of(new Button("Create New Game", Destination.CREATE_GAME),
             new Button("Join Game:", Destination.LIST_GAMES)),
             gameData.stream().map(game -> new Button(game.gameName(), Destination.JOIN_GAME)),
-            Stream.of(new Button("Logout", Destination.LOGOUT))
+            Stream.of(new Button("Logout", Destination.BACK))
         ).flatMap(s -> s).toArray(Option[]::new)});
         while (true) {
             drawMenu(grid);
             switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
                 case CREATE_GAME -> {return Destination.CREATE_GAME;}
-                case LOGOUT -> {
+                case BACK -> {
                     switch (clientLogic.logout()) {
                         case OK -> {return Destination.PRE_LOGIN;}
                         case SERVER_ERROR -> {drawLines("Unable to connect to server", RowAlign.BOTTOM);}
@@ -189,7 +203,7 @@ public class CommandLineUI {
             new TextField("Username"),
             new TextField("Password", true),
             new Button("Submit", Destination.SUBMIT_LOGIN),
-            new Button("Back", Destination.PRE_LOGIN)
+            new Button("Back", Destination.BACK)
         }});
         while (true) {
             drawMenu(grid);
@@ -207,7 +221,7 @@ public class CommandLineUI {
                         }
                     }
                 }
-                case PRE_LOGIN -> {return Destination.PRE_LOGIN;}
+                case BACK -> {return Destination.PRE_LOGIN;}
                 case LOGIN -> {continue;}
             }
         }
@@ -251,14 +265,14 @@ public class CommandLineUI {
         OptionGrid grid = new OptionGrid(Destination.PRE_LOGIN, new Option[][]{{
             new Button("Login", Destination.LOGIN),
             new Button("Register", Destination.REGISTER),
-            new Button("Quit", Destination.QUIT)
+            new Button("Quit", Destination.BACK)
         }});
         while (true) {
             drawMenu(grid);
             switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
                 case LOGIN -> {return Destination.LOGIN;}
                 case REGISTER -> {return Destination.REGISTER;}
-                case QUIT -> {return Destination.QUIT;}
+                case BACK -> {return Destination.QUIT;}
                 case PRE_LOGIN -> {continue;}
             }
         }

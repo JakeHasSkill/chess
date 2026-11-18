@@ -47,7 +47,7 @@ public class OptionGrid implements Grid {
                 return ((Button) options[selectedColumn][selectedRow]).getDestination();
             }
         }
-        else if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {return Destination.PRE_LOGIN;}
+        else if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {return Destination.BACK;}
         else if (keyPress.key() == CLIKeyListener.Key.BACKSPACE) {backspace();}
         else if (keyPress.key() == CLIKeyListener.Key.CHAR) {sendLetter(keyPress.character());}
         return currentScreen;

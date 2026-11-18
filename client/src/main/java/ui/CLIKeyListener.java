@@ -18,8 +18,8 @@ public class CLIKeyListener{
         try {
             while (true) {
                 int b = in.read();
-                if (b == -1) {new KeyPress(Key.ESCAPE, '\0');} // EOF
-                if (b == 9) {new KeyPress(Key.TAB, '\0');}
+                if (b == -1) {return new KeyPress(Key.ESCAPE, '\0');} // EOF
+                if (b == 9) {return new KeyPress(Key.TAB, '\0');}
                 if (b == 127 || b == 8) {return new KeyPress(Key.BACKSPACE, '\0');}
                 if (b == '\r' || b == '\n') {return new KeyPress(Key.ENTER, '\0');}
                 if (b == 27) { // Escape character

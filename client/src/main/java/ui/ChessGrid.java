@@ -1,5 +1,6 @@
 package ui;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPiece.PieceType;
@@ -35,10 +36,10 @@ public class ChessGrid implements Grid {
         this.color = color;
         ArrayList<ArrayList<ChessTile>> tilesBuilder = new ArrayList<>();
         if (color == ChessGame.TeamColor.WHITE) {
-            for (int row = 7; row >= 0; row--) {
+            for (int row = 0; row <= 7; row++) {
                 ArrayList<ChessTile> currentRow = new ArrayList<>();
                 for (int col = 7; col >= 0; col--) {
-                    boolean whiteTile = (col + row) % 2 == 0;
+                    boolean whiteTile = (col + row) % 2 == 1;
                     ChessPiece piece = board[row][col];
                     if (piece == null) {
                         currentRow.add(new ChessTile("  ", whiteTile));
@@ -47,15 +48,14 @@ public class ChessGrid implements Grid {
                     } else {
                         currentRow.add(new ChessTile(whitePieces.get(piece.getPieceType()), whiteTile));
                     }
-
                 }
                 tilesBuilder.add(currentRow);
             }
         } else {
-            for (int row = 0; row <= 7; row++) {
+            for (int row = 7; row >= 0; row--) {
                 ArrayList<ChessTile> currentRow = new ArrayList<>();
                 for (int col = 0; col <= 7; col++) {
-                    boolean whiteTile = (col + row) % 2 == 0;
+                    boolean whiteTile = (col + row) % 2 == 1;
                     ChessPiece piece = board[row][col];
                     if (piece == null) {
                         currentRow.add(new ChessTile("  ", whiteTile));
@@ -64,7 +64,6 @@ public class ChessGrid implements Grid {
                     } else {
                         currentRow.add(new ChessTile(whitePieces.get(piece.getPieceType()), whiteTile));
                     }
-
                 }
                 tilesBuilder.add(currentRow);
             }
