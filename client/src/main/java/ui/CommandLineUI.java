@@ -69,7 +69,9 @@ public class CommandLineUI {
     }
 
     private Destination observeGameLoop() {
-        ChessGrid chessGrid = new ChessGrid(Destination.IN_GAME_OBSERVE, registerLoopKeypress.getCurrentGame().game().getBoard().getBoard(), ChessGame.TeamColor.WHITE);
+        ChessGrid chessGrid = new ChessGrid(
+                Destination.IN_GAME_OBSERVE, registerLoopKeypress.getCurrentGame().game().getBoard().getBoard(), ChessGame.TeamColor.WHITE
+        );
         while (true) {
             drawMenu(chessGrid);
             switch (chessGrid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
@@ -80,7 +82,9 @@ public class CommandLineUI {
     }
 
     private Destination inGameLoop() {
-        ChessGrid chessGrid = new ChessGrid(Destination.IN_GAME, registerLoopKeypress.getCurrentGame().game().getBoard().getBoard(), registerLoopKeypress.getMyColor());
+        ChessGrid chessGrid = new ChessGrid(
+                Destination.IN_GAME, registerLoopKeypress.getCurrentGame().game().getBoard().getBoard(), registerLoopKeypress.getMyColor()
+        );
         while (true) {
             drawMenu(chessGrid);
             switch (chessGrid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
