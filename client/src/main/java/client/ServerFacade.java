@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 public class ServerFacade {
     private final String url;
-    private static final HttpClient httpClient = HttpClient.newHttpClient();
+    private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
     private final Gson gson;
 
     public ServerFacade(String url) {
@@ -51,7 +51,7 @@ public class ServerFacade {
             }
             if (authToken != null) {builder.header("authorization", authToken);}
             HttpRequest request = builder.build();
-            return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (URISyntaxException e) {
             throw new ServerError("URL syntax incorrect");
         } catch (IOException e) {

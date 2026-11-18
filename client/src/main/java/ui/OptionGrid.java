@@ -12,11 +12,6 @@ public class OptionGrid implements Grid {
         this.currentScreen = currentScreen;
     }
 
-    public void setSelectedElement(int row, int col) {
-        selectedRow = row;
-        selectedColumn = col;
-    }
-
     private void goUp() {
         if (selectedRow == 0) {return;}
         selectedRow--;
@@ -42,6 +37,8 @@ public class OptionGrid implements Grid {
         else if (keyPress.key() == CLIKeyListener.Key.DOWN || keyPress.key() == CLIKeyListener.Key.TAB) {
             goDown();
         }
+        else if (keyPress.key() == CLIKeyListener.Key.LEFT) {goLeft();}
+        else if (keyPress.key() == CLIKeyListener.Key.RIGHT) {goRight();}
         else if (keyPress.key() == CLIKeyListener.Key.ENTER) {
             if (options[selectedColumn][selectedRow].getClass() == Button.class) {
                 return ((Button) options[selectedColumn][selectedRow]).getDestination();

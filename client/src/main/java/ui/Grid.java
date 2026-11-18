@@ -1,19 +1,12 @@
 package ui;
 
 public interface Grid {
-    public void setSelectedElement(int row, int col);
-
-    public Destination sendKeyPress(CLIKeyListener.KeyPress keyPress);
-
-    public void backspace();
-
-    public void sendLetter(char c);
-
-    public String getValue(int row, int col);
-
-    public int getSelectedRow();
-    public int getSelectedColumn();
-
+    Destination sendKeyPress(CLIKeyListener.KeyPress keyPress);
+    void backspace();
+    void sendLetter(char c);
+    String getValue(int row, int col);
+    int getSelectedRow();
+    int getSelectedColumn();
     @Override
-    public String toString();
+    String toString();
 }

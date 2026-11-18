@@ -1,6 +1,5 @@
 package ui;
 
-import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPiece.PieceType;
@@ -15,7 +14,7 @@ public class ChessGrid implements Grid {
     private int selectedRow, selectedColumn;
     private final Destination currentScreen;
     private final ChessGame.TeamColor color;
-    private static final Map<PieceType, String> whitePieces = Map.of(
+    private static final Map<PieceType, String> WHITE_PIECES = Map.of(
             PieceType.ROOK, WHITE_ROOK,
             PieceType.BISHOP, WHITE_BISHOP,
             PieceType.KNIGHT, WHITE_KNIGHT,
@@ -23,7 +22,7 @@ public class ChessGrid implements Grid {
             PieceType.KING, WHITE_KING,
             PieceType.PAWN, WHITE_PAWN
     );
-    private static final Map<PieceType, String> blackPieces = Map.of(
+    private static final Map<PieceType, String> BLACK_PIECES = Map.of(
             PieceType.ROOK, BLACK_ROOK,
             PieceType.BISHOP, BLACK_BISHOP,
             PieceType.KNIGHT, BLACK_KNIGHT,
@@ -38,33 +37,13 @@ public class ChessGrid implements Grid {
         if (color == ChessGame.TeamColor.WHITE) {
             for (int row = 0; row <= 7; row++) {
                 ArrayList<ChessTile> currentRow = new ArrayList<>();
-                for (int col = 7; col >= 0; col--) {
-                    boolean whiteTile = (col + row) % 2 == 1;
-                    ChessPiece piece = board[row][col];
-                    if (piece == null) {
-                        currentRow.add(new ChessTile("  ", whiteTile));
-                    } else if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
-                        currentRow.add(new ChessTile(blackPieces.get(piece.getPieceType()), whiteTile));
-                    } else {
-                        currentRow.add(new ChessTile(whitePieces.get(piece.getPieceType()), whiteTile));
-                    }
-                }
+                for (int col = 7; col >= 0; col--) addTile(board, col, row, currentRow);
                 tilesBuilder.add(currentRow);
             }
         } else {
             for (int row = 7; row >= 0; row--) {
                 ArrayList<ChessTile> currentRow = new ArrayList<>();
-                for (int col = 0; col <= 7; col++) {
-                    boolean whiteTile = (col + row) % 2 == 1;
-                    ChessPiece piece = board[row][col];
-                    if (piece == null) {
-                        currentRow.add(new ChessTile("  ", whiteTile));
-                    } else if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
-                        currentRow.add(new ChessTile(blackPieces.get(piece.getPieceType()), whiteTile));
-                    } else {
-                        currentRow.add(new ChessTile(whitePieces.get(piece.getPieceType()), whiteTile));
-                    }
-                }
+                for (int col = 0; col <= 7; col++) addTile(board, col, row, currentRow);
                 tilesBuilder.add(currentRow);
             }
         }
@@ -74,9 +53,16 @@ public class ChessGrid implements Grid {
         this.currentScreen = currentScreen;
     }
 
-    public void setSelectedElement(int row, int col) {
-        selectedRow = row;
-        selectedColumn = col;
+    private static void addTile(ChessPiece[][] board, int col, int row, ArrayList<ChessTile> currentRow) {
+        boolean whiteTile = (col + row) % 2 == 1;
+        ChessPiece piece = board[row][col];
+        if (piece == null) {
+            currentRow.add(new ChessTile("  ", whiteTile));
+        } else if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) {
+            currentRow.add(new ChessTile(BLACK_PIECES.get(piece.getPieceType()), whiteTile));
+        } else {
+            currentRow.add(new ChessTile(WHITE_PIECES.get(piece.getPieceType()), whiteTile));
+        }
     }
 
     private void goUp() {
@@ -101,6 +87,10 @@ public class ChessGrid implements Grid {
 
     public Destination sendKeyPress(CLIKeyListener.KeyPress keyPress) {
         if (keyPress.key() == CLIKeyListener.Key.ESCAPE) {return Destination.LIST_GAMES;}
+        else if (keyPress.key() == CLIKeyListener.Key.UP) {goUp();}
+        else if (keyPress.key() == CLIKeyListener.Key.DOWN) {goDown();}
+        else if (keyPress.key() == CLIKeyListener.Key.LEFT) {goLeft();}
+        else if (keyPress.key() == CLIKeyListener.Key.RIGHT) {goRight();}
         return currentScreen;
     }
 

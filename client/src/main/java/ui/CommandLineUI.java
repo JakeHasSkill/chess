@@ -36,6 +36,7 @@ public class CommandLineUI {
 
         setDimensions();
 
+        System.out.print(moveCursor(1, 1)); // this can be taken out later
         System.out.print(ENTER_ALT_SCREEN + ERASE_SCREEN + HIDE_CURSOR + "Chess UI :)");
         System.out.flush();
 
