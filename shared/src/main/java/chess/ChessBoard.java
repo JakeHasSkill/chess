@@ -26,6 +26,10 @@ public class ChessBoard{
         }
     }
 
+    public ChessPiece[][] getBoard() {
+        return new ChessBoard(this).board;
+    }
+
     /**
      * Adds a chess piece to the chessboard
      *

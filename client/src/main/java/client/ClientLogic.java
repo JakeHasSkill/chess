@@ -18,6 +18,10 @@ public class ClientLogic {
         gameList = new ArrayList<>();
     }
 
+    public GameData getCurrentGame() {
+        return currentGame;
+    }
+
     public enum LoginResult {
         OK, INCORRECT_CREDENTIALS, SERVER_ERROR
     }
@@ -88,6 +92,15 @@ public class ClientLogic {
         return null;
     }
 
+    public GameData getGameData(int gameID) {
+        for (GameData game : gameList) {
+            if (gameID == game.gameID()) {
+                return game;
+            }
+        }
+        return null;
+    }
+
     public enum JoinGameResult {
         OK, TEAM_COLOR_TAKEN, SERVER_ERROR, NOT_LOGGED_IN
     }
@@ -98,6 +111,8 @@ public class ClientLogic {
         catch (ServerError e) {return JoinGameResult.SERVER_ERROR;}
         catch (NotLoggedIn e) {return JoinGameResult.NOT_LOGGED_IN;}
         myColor = color;
+        requestGames();
+        currentGame = getGameData(gameID);
         return JoinGameResult.OK;
     }
 
@@ -106,6 +121,8 @@ public class ClientLogic {
     }
 
     public void observeGame(int gameID) {
-
+        requestGames();
+        currentGame = getGameData(gameID);
+        myColor = ChessGame.TeamColor.WHITE;
     }
 }

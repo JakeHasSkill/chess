@@ -1,6 +1,6 @@
 package ui;
 
-public class OptionGrid {
+public class OptionGrid implements Grid {
     private final Option[][] options;
     private int selectedRow, selectedColumn;
     private final Destination currentScreen;

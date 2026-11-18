@@ -47,8 +47,8 @@ public class CommandLineUI {
                 case LIST_GAMES -> currentScreen = listGamesLoop();
                 case CREATE_GAME -> currentScreen = createGameLoop();
                 case JOIN_GAME -> currentScreen = joinGameLoop();
-//                case IN_GAME -> currentScreen = inGameLoop();
-//                case IN_GAME_OBSERVE -> currentScreen = observeGameLoop();
+                case IN_GAME -> currentScreen = inGameLoop();
+                case IN_GAME_OBSERVE -> currentScreen = observeGameLoop();
                 case QUIT -> {break ui;}
             }
         }
@@ -67,6 +67,28 @@ public class CommandLineUI {
         }
     }
 
+    private Destination observeGameLoop() {
+        ChessGrid chessGrid = new ChessGrid(Destination.IN_GAME_OBSERVE, clientLogic.getCurrentGame().game().getBoard().getBoard(), ChessGame.TeamColor.WHITE);
+        while (true) {
+            drawMenu(chessGrid);
+            switch (chessGrid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+                case LIST_GAMES -> {return Destination.LIST_GAMES;}
+                case IN_GAME_OBSERVE -> {continue;}
+            }
+        }
+    }
+
+    private Destination inGameLoop() {
+        ChessGrid chessGrid = new ChessGrid(Destination.IN_GAME, clientLogic.getCurrentGame().game().getBoard().getBoard(), clientLogic.getMyColor());
+        while (true) {
+            drawMenu(chessGrid);
+            switch (chessGrid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+                case LIST_GAMES -> {return Destination.LIST_GAMES;}
+                case IN_GAME -> {continue;}
+            }
+        }
+    }
+
     private Destination joinGameLoop() {
         ArrayList<Option> options = new ArrayList<>();
         if (gameToJoin.blackUsername() == null) {
@@ -75,16 +97,16 @@ public class CommandLineUI {
         if (gameToJoin.whiteUsername() == null) {
             options.add(new Button("Join as White team", Destination.IN_GAME));
         }
-        options.add(new Button("Join as observer", Destination.JOIN_GAME));
+        options.add(new Button("Join as observer", Destination.IN_GAME_OBSERVE));
         options.add(new Button("Back", Destination.LIST_GAMES));
-        OptionGrid grid = new OptionGrid(Destination.CREATE_GAME, new Option[][]{Stream.of(
+        OptionGrid grid = new OptionGrid(Destination.JOIN_GAME, new Option[][]{Stream.of(
             options.stream()
         ).flatMap(s -> s).toArray(Option[]::new)});
         while (true) {
             drawMenu(grid);
             switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
                 case IN_GAME -> {
-                    if (clientLogic.getMyColor() == ChessGame.TeamColor.BLACK) {
+                    if (grid.getValue(grid.getSelectedRow(), grid.getSelectedColumn()).equals("Join as Black team")) {
                         clientLogic.joinGame(gameToJoin.gameID(), ChessGame.TeamColor.BLACK);
                     } else {clientLogic.joinGame(gameToJoin.gameID(), ChessGame.TeamColor.WHITE);}
                     return Destination.IN_GAME;
@@ -94,7 +116,7 @@ public class CommandLineUI {
                     return Destination.IN_GAME_OBSERVE;
                 }
                 case LIST_GAMES -> {return Destination.LIST_GAMES;}
-                case CREATE_GAME -> {continue;}
+                case JOIN_GAME -> {continue;}
             }
         }
     }
@@ -242,7 +264,7 @@ public class CommandLineUI {
         }
     }
 
-    private void drawMenu(OptionGrid grid) {
+    private void drawMenu(Grid grid) {
         setDimensions();
         drawLines(grid.toString(), RowAlign.CENTER);
         drawLines("———CHESS———", RowAlign.TOP);
