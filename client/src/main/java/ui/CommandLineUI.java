@@ -11,7 +11,7 @@ import model.GameData;
 import static ui.EscapeSequences.*;
 
 public class CommandLineUI {
-    private ClientLogic clientLogic;
+    private ClientLogic registerLoopKeypress;
     private final CLIKeyListener cliKeyListener = new CLIKeyListener();
     private int terminalWidth, terminalHeight;
     private StringBuilder screenBufferCenter, screenBufferTop, screenBufferBottom;
@@ -20,7 +20,7 @@ public class CommandLineUI {
     private GameData gameToJoin;
 
     public CommandLineUI(ClientLogic clientLogic) {
-        this.clientLogic = clientLogic;
+        this.registerLoopKeypress = clientLogic;
         this.currentScreen = Destination.PRE_LOGIN;
         try {
             runBashCommand("stty raw -echo < /dev/tty");
@@ -69,7 +69,7 @@ public class CommandLineUI {
     }
 
     private Destination observeGameLoop() {
-        ChessGrid chessGrid = new ChessGrid(Destination.IN_GAME_OBSERVE, clientLogic.getCurrentGame().game().getBoard().getBoard(), ChessGame.TeamColor.WHITE);
+        ChessGrid chessGrid = new ChessGrid(Destination.IN_GAME_OBSERVE, registerLoopKeypress.getCurrentGame().game().getBoard().getBoard(), ChessGame.TeamColor.WHITE);
         while (true) {
             drawMenu(chessGrid);
             switch (chessGrid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
@@ -80,7 +80,7 @@ public class CommandLineUI {
     }
 
     private Destination inGameLoop() {
-        ChessGrid chessGrid = new ChessGrid(Destination.IN_GAME, clientLogic.getCurrentGame().game().getBoard().getBoard(), clientLogic.getMyColor());
+        ChessGrid chessGrid = new ChessGrid(Destination.IN_GAME, registerLoopKeypress.getCurrentGame().game().getBoard().getBoard(), registerLoopKeypress.getMyColor());
         while (true) {
             drawMenu(chessGrid);
             switch (chessGrid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
@@ -109,31 +109,47 @@ public class CommandLineUI {
         ).flatMap(s -> s).toArray(Option[]::new)});
         while (true) {
             drawMenu(grid);
-            switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
-                case IN_GAME -> {
-                    ChessGame.TeamColor color;
-                    if (grid.getValue(grid.getSelectedRow(), grid.getSelectedColumn()).equals("Join as Black team")) {
-                        color = ChessGame.TeamColor.BLACK;
-                    } else {color = ChessGame.TeamColor.WHITE;}
-                    switch (clientLogic.joinGame(gameToJoin.gameID(), color)) {
-                        case NOT_LOGGED_IN -> {return Destination.PRE_LOGIN;}
-                        case TEAM_COLOR_TAKEN -> {
-                            clientLogic.requestGames();
-                            gameToJoin = clientLogic.getGameData(gameToJoin.gameID());
-                            return Destination.JOIN_GAME;
-                        }
-                        case SERVER_ERROR -> {drawLines("Unable to connect to server", RowAlign.BOTTOM);}
-                        case OK -> {return Destination.IN_GAME;}
-                    }
-                }
-                case IN_GAME_OBSERVE -> {
-                    clientLogic.observeGame(gameToJoin.gameID());
-                    return Destination.IN_GAME_OBSERVE;
-                }
-                case BACK -> {return Destination.LIST_GAMES;}
-                case JOIN_GAME -> {continue;}
+            Destination preLogin = joinGameLoopKeypress(grid);
+            if (preLogin != null) {
+                return preLogin;
             }
         }
+    }
+
+    private Destination joinGameLoopKeypress(OptionGrid grid) {
+        switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+            case IN_GAME -> {
+                ChessGame.TeamColor color;
+                if (grid.getValue(grid.getSelectedRow(), grid.getSelectedColumn()).equals("Join as Black team")) {
+                    color = ChessGame.TeamColor.BLACK;
+                } else {color = ChessGame.TeamColor.WHITE;}
+                switch (registerLoopKeypress.joinGame(gameToJoin.gameID(), color)) {
+                    case NOT_LOGGED_IN -> {
+                        return Destination.PRE_LOGIN;
+                    }
+                    case TEAM_COLOR_TAKEN -> {
+                        registerLoopKeypress.requestGames();
+                        gameToJoin = registerLoopKeypress.getGameData(gameToJoin.gameID());
+                        return Destination.JOIN_GAME;
+                    }
+                    case SERVER_ERROR -> {drawLines("Unable to connect to server", RowAlign.BOTTOM);}
+                    case OK -> {
+                        return Destination.IN_GAME;
+                    }
+                }
+            }
+            case IN_GAME_OBSERVE -> {
+                registerLoopKeypress.observeGame(gameToJoin.gameID());
+                return Destination.IN_GAME_OBSERVE;
+            }
+            case BACK -> {
+                return Destination.LIST_GAMES;
+            }
+            case JOIN_GAME -> {
+                return null;
+            }
+        }
+        return null;
     }
 
     private Destination createGameLoop() {
@@ -144,32 +160,46 @@ public class CommandLineUI {
         }});
         while (true) {
             drawMenu(grid);
-            switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
-                case SUBMIT_CREATE_GAME -> {
-                    String gameName = grid.getValue(0, 0);
-                    switch (clientLogic.createGame(gameName)) {
-                        case NOT_LOGGED_IN -> {
-                            drawLines("Not logged in", RowAlign.BOTTOM);
-                            return Destination.PRE_LOGIN;
-                        }
-                        case SERVER_ERROR -> drawLines("Unable to connect to server", RowAlign.BOTTOM);
-                        case OK -> {}
-                    }
-                    clientLogic.requestGames();
-                    gameToJoin = clientLogic.getGameData(gameName);
-                    if (gameToJoin == null) {return Destination.LIST_GAMES;}
-                    return Destination.JOIN_GAME;
-                }
-                case BACK -> {return Destination.LIST_GAMES;}
-                case CREATE_GAME -> {continue;}
+            Destination preLogin = createGameLoopKeypress(grid);
+            if (preLogin != null) {
+                return preLogin;
             }
         }
     }
 
+    private Destination createGameLoopKeypress(OptionGrid grid) {
+        switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+            case SUBMIT_CREATE_GAME -> {
+                String gameName = grid.getValue(0, 0);
+                switch (registerLoopKeypress.createGame(gameName)) {
+                    case NOT_LOGGED_IN -> {
+                        drawLines("Not logged in", RowAlign.BOTTOM);
+                        return Destination.PRE_LOGIN;
+                    }
+                    case SERVER_ERROR -> drawLines("Unable to connect to server", RowAlign.BOTTOM);
+                    case OK -> {}
+                }
+                registerLoopKeypress.requestGames();
+                gameToJoin = registerLoopKeypress.getGameData(gameName);
+                if (gameToJoin == null) {
+                    return Destination.LIST_GAMES;
+                }
+                return Destination.JOIN_GAME;
+            }
+            case BACK -> {
+                return Destination.LIST_GAMES;
+            }
+            case CREATE_GAME -> {
+                return null;
+            }
+        }
+        return null;
+    }
+
     private Destination listGamesLoop() {
         ArrayList<GameData> gameData = new ArrayList<>();
-        switch (clientLogic.requestGames()) {
-            case OK -> gameData = clientLogic.getGames();
+        switch (registerLoopKeypress.requestGames()) {
+            case OK -> gameData = registerLoopKeypress.getGames();
             case NOT_LOGGED_IN -> {return Destination.PRE_LOGIN;}
             case SERVER_ERROR -> drawLines("Server Error; Unable to list games.", RowAlign.BOTTOM);
         }
@@ -181,22 +211,38 @@ public class CommandLineUI {
         ).flatMap(s -> s).toArray(Option[]::new)});
         while (true) {
             drawMenu(grid);
-            switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
-                case CREATE_GAME -> {return Destination.CREATE_GAME;}
-                case BACK -> {
-                    switch (clientLogic.logout()) {
-                        case OK -> {return Destination.PRE_LOGIN;}
-                        case SERVER_ERROR -> {drawLines("Unable to connect to server", RowAlign.BOTTOM);}
-                    }
-                }
-                case JOIN_GAME -> {
-                    gameToJoin = clientLogic.getGameData(grid.getValue(grid.getSelectedRow(), grid.getSelectedColumn()));
-                    if (gameToJoin == null) {return Destination.LIST_GAMES;}
-                    return Destination.JOIN_GAME;
-                }
-                case LIST_GAMES -> {continue;}
+            Destination createGame = listGamesLoopKeypress(grid);
+            if (createGame != null) {
+                return createGame;
             }
         }
+    }
+
+    private Destination listGamesLoopKeypress(OptionGrid grid) {
+        switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+            case CREATE_GAME -> {
+                return Destination.CREATE_GAME;
+            }
+            case BACK -> {
+                switch (registerLoopKeypress.logout()) {
+                    case OK -> {
+                        return Destination.PRE_LOGIN;
+                    }
+                    case SERVER_ERROR -> {drawLines("Unable to connect to server", RowAlign.BOTTOM);}
+                }
+            }
+            case JOIN_GAME -> {
+                gameToJoin = registerLoopKeypress.getGameData(grid.getValue(grid.getSelectedRow(), grid.getSelectedColumn()));
+                if (gameToJoin == null) {
+                    return Destination.LIST_GAMES;
+                }
+                return Destination.JOIN_GAME;
+            }
+            case LIST_GAMES -> {
+                return null;
+            }
+        }
+        return null;
     }
 
     private Destination loginLoop() {
@@ -208,24 +254,34 @@ public class CommandLineUI {
         }});
         while (true) {
             drawMenu(grid);
-            switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
-                case SUBMIT_LOGIN -> {
-                    String username = grid.getValue(0, 0);
-                    String password = grid.getValue(1, 0);
-                    switch (clientLogic.login(username, password)) {
-                        case OK -> {return Destination.LIST_GAMES;}
-                        case INCORRECT_CREDENTIALS -> {
-                            drawLines("Incorrect username or password", RowAlign.BOTTOM);
-                        }
-                        case SERVER_ERROR -> {
-                            drawLines("Unable to connect to server", RowAlign.BOTTOM);
-                        }
-                    }
-                }
-                case BACK -> {return Destination.PRE_LOGIN;}
-                case LOGIN -> {continue;}
+            Destination listGames = loginLoopKeypress(grid);
+            if (listGames != null) {
+                return listGames;
             }
         }
+    }
+
+    private Destination loginLoopKeypress(OptionGrid grid) {
+        switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+            case SUBMIT_LOGIN -> {
+                String username = grid.getValue(0, 0);
+                String password = grid.getValue(1, 0);
+                switch (registerLoopKeypress.login(username, password)) {
+                    case OK -> {
+                        return Destination.LIST_GAMES;
+                    }
+                    case INCORRECT_CREDENTIALS -> drawLines("Incorrect username or password", RowAlign.BOTTOM);
+                    case SERVER_ERROR -> drawLines("Unable to connect to server", RowAlign.BOTTOM);
+                }
+            }
+            case BACK -> {
+                return Destination.PRE_LOGIN;
+            }
+            case LOGIN -> {
+                return null;
+            }
+        }
+        return null;
     }
 
     private Destination registerLoop() {
@@ -238,28 +294,42 @@ public class CommandLineUI {
         }});
         while (true) {
             drawMenu(grid);
-            switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
-                case PRE_LOGIN -> {return Destination.PRE_LOGIN;}
-                case SUBMIT_REGISTER -> {
-                    String username = grid.getValue(0, 0);
-                    String password = grid.getValue(1, 0);
-                    String email = grid.getValue(2, 0);
-                    switch (clientLogic.register(username, password, email)) {
-                        case OK -> {return Destination.LIST_GAMES;}
-                        case BAD_PASSWORD -> {
-                            drawLines("Password must be at least 8 characters long", RowAlign.BOTTOM);
-                        }
-                        case USERNAME_TAKEN -> {
-                            drawLines("Username already taken", RowAlign.BOTTOM);
-                        }
-                        case SERVER_ERROR -> {
-                            drawLines("Unable to connect to server", RowAlign.BOTTOM);
-                        }
-                    }
-                }
-                case REGISTER -> {continue;}
+            Destination preLogin = registerLoopKeypress(grid);
+            if (preLogin != null) {
+                return preLogin;
             }
         }
+    }
+
+    private Destination registerLoopKeypress(OptionGrid grid) {
+        switch (grid.sendKeyPress(cliKeyListener.getNextKeyPress())) {
+            case PRE_LOGIN -> {
+                return Destination.PRE_LOGIN;
+            }
+            case SUBMIT_REGISTER -> {
+                String username = grid.getValue(0, 0);
+                String password = grid.getValue(1, 0);
+                String email = grid.getValue(2, 0);
+                switch (registerLoopKeypress.register(username, password, email)) {
+                    case OK -> {
+                        return Destination.LIST_GAMES;
+                    }
+                    case BAD_PASSWORD -> {
+                        drawLines("Password must be at least 8 characters long", RowAlign.BOTTOM);
+                    }
+                    case USERNAME_TAKEN -> {
+                        drawLines("Username already taken", RowAlign.BOTTOM);
+                    }
+                    case SERVER_ERROR -> {
+                        drawLines("Unable to connect to server", RowAlign.BOTTOM);
+                    }
+                }
+            }
+            case REGISTER -> {
+                return null;
+            }
+        }
+        return null;
     }
 
     private Destination preLoginLoop() {

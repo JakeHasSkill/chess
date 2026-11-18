@@ -35,22 +35,34 @@ public class ChessGrid implements Grid {
         this.color = color;
         ArrayList<ArrayList<ChessTile>> tilesBuilder = new ArrayList<>();
         if (color == ChessGame.TeamColor.WHITE) {
-            for (int row = 0; row <= 7; row++) {
-                ArrayList<ChessTile> currentRow = new ArrayList<>();
-                for (int col = 7; col >= 0; col--) addTile(board, col, row, currentRow);
-                tilesBuilder.add(currentRow);
-            }
+            addTilesLoopWhite(tilesBuilder, board);
         } else {
-            for (int row = 7; row >= 0; row--) {
-                ArrayList<ChessTile> currentRow = new ArrayList<>();
-                for (int col = 0; col <= 7; col++) addTile(board, col, row, currentRow);
-                tilesBuilder.add(currentRow);
-            }
+            addTilesLoopBlack(tilesBuilder, board);
         }
         this.tiles = tilesBuilder.stream().map(row -> row.toArray(new ChessTile[0])).toArray(ChessTile[][]::new);
         selectedRow = 0;
         selectedColumn = 0;
         this.currentScreen = currentScreen;
+    }
+
+    private static void addTilesLoopWhite(ArrayList<ArrayList<ChessTile>> tilesBuilder, ChessPiece[][] board) {
+        for (int row = 0; row <= 7; row++) {
+            ArrayList<ChessTile> currentRow = new ArrayList<>();
+            for (int col = 7; col >= 0; col--) {
+                addTile(board, col, row, currentRow);
+            }
+            tilesBuilder.add(currentRow);
+        }
+    }
+
+    private static void addTilesLoopBlack(ArrayList<ArrayList<ChessTile>> tilesBuilder, ChessPiece[][] board) {
+        for (int row = 7; row >= 0; row--) {
+            ArrayList<ChessTile> currentRow = new ArrayList<>();
+            for (int col = 0; col <= 7; col++) {
+                addTile(board, col, row, currentRow);
+            }
+            tilesBuilder.add(currentRow);
+        }
     }
 
     private static void addTile(ChessPiece[][] board, int col, int row, ArrayList<ChessTile> currentRow) {
