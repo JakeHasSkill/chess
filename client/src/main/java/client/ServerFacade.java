@@ -1,7 +1,6 @@
 package client;
 
 import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
 import model.*;
 
 import java.io.IOException;
@@ -11,7 +10,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class ServerFacade {
     private final String url;
@@ -24,7 +22,13 @@ public class ServerFacade {
     }
 
     public void clearDatabase() {
-
+        HttpResponse<String> response = makeHttpRequest("/db", null, null, HttpMethod.DELETE);
+        if (response.statusCode() >= 200 && response.statusCode() < 300) {
+            return;
+        }
+        else {
+            throw new ServerError("Unable to connect to server");
+        }
     }
 
     public enum HttpMethod {
